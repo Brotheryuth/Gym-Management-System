@@ -24,6 +24,10 @@ public class Staff {
 
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+?[0-9\\s\\-\\(\\)]{7,15}$");
 
+    public Staff() {
+        this.id = java.util.UUID.randomUUID().toString();
+    }
+
     /**
      * Constructor to create a new staff record (ID is auto-generated).
      *
@@ -99,10 +103,8 @@ public class Staff {
     }
 
     public void setName(String name) {
-        if (name == null || name.isBlank() || name.trim().isEmpty()) {
-            System.out.println("Invalid name. Setting default: 'Unknown'");
-            this.name = "Unknown";
-            return;
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Name cannot be null or blank.");
         }
         this.name = name.trim();
     }
@@ -113,9 +115,7 @@ public class Staff {
 
     public void setGender(Gender gender) {
         if (gender == null) {
-            System.out.println("Invalid gender. Setting default: MALE");
-            this.gender = Gender.MALE;
-            return;
+            throw new IllegalArgumentException("Gender cannot be null.");
         }
         this.gender = gender;
     }
@@ -126,17 +126,14 @@ public class Staff {
 
     public void setDob(Date dob) {
         if (dob == null) {
-            System.out.println("Invalid Date of Birth. Setting default: 18 years ago.");
-            this.dob = Date.valueOf(LocalDate.now().minusYears(18));
+            this.dob = null; // optional
             return;
         }
 
         LocalDate dobLocalDate = dob.toLocalDate();
         int calculatedAge = Period.between(dobLocalDate, LocalDate.now()).getYears();
         if (calculatedAge < 5 || calculatedAge > 100) {
-            System.out.println("Invalid age from Date of Birth (" + calculatedAge + "). Setting default: 18 years ago.");
-            this.dob = Date.valueOf(LocalDate.now().minusYears(18));
-            return;
+            throw new IllegalArgumentException("Age from Date of Birth (" + calculatedAge + ") must be between 5 and 100.");
         }
         this.dob = dob;
     }
@@ -147,9 +144,7 @@ public class Staff {
 
     public void setSalary(double salary) {
         if (salary < 0.0) {
-            System.out.println("Invalid salary. Setting default: 0.0");
-            this.salary = 0.0;
-            return;
+            throw new IllegalArgumentException("Salary cannot be negative.");
         }
         this.salary = salary;
     }
@@ -159,15 +154,13 @@ public class Staff {
     }
 
     public void setPhoneNumber(String phoneNumber) {
-        if (phoneNumber == null) {
+        if (phoneNumber == null || phoneNumber.trim().equalsIgnoreCase("N/A")) {
             this.phoneNumber = "N/A";
             return;
         }
         String cleanPhone = phoneNumber.trim();
         if (!PHONE_PATTERN.matcher(cleanPhone).matches()) {
-            System.out.println("Invalid phone number. Setting default: N/A");
-            this.phoneNumber = "N/A";
-            return;
+            throw new IllegalArgumentException("Invalid phone number format.");
         }
         this.phoneNumber = cleanPhone;
     }
@@ -177,10 +170,8 @@ public class Staff {
     }
 
     public void setPassword(String password) {
-        if (password == null || password.isBlank() || password.trim().isEmpty()) {
-            System.out.println("Password is Null or empty. Setting default: 87654321");
-            this.password = "87654321";
-            return;
+        if (password == null || password.isBlank()) {
+            throw new IllegalArgumentException("Password cannot be null or blank.");
         }
         this.password = password;
     }
@@ -191,9 +182,7 @@ public class Staff {
 
     public void setRole(StaffRole role) {
         if (role == null) {
-            System.out.println("Invalid role. Setting default: CASHIER");
-            this.role = StaffRole.CASHIER;
-            return;
+            throw new IllegalArgumentException("Role cannot be null.");
         }
         this.role = role;
     }
@@ -204,9 +193,7 @@ public class Staff {
 
     public void setShift(StaffShift shift) {
         if (shift == null) {
-            System.out.println("Invalid shift. Setting default: MORNING");
-            this.shift = StaffShift.MORNING;
-            return;
+            throw new IllegalArgumentException("Shift cannot be null.");
         }
         this.shift = shift;
     }
@@ -217,9 +204,7 @@ public class Staff {
 
     public void setHireDate(Date hireDate) {
         if (hireDate == null) {
-            System.out.println("Invalid hire date. Setting default: Today");
-            this.hireDate = Date.valueOf(LocalDate.now());
-            return;
+            throw new IllegalArgumentException("Hire date cannot be null.");
         }
         this.hireDate = hireDate;
     }

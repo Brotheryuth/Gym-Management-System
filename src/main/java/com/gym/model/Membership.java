@@ -30,6 +30,10 @@ public class Membership {
         return null;
     }
 
+    public Membership() {
+        this.id = java.util.UUID.randomUUID().toString();
+    }
+
     /**
      * Constructor to create a new membership (ID is auto-generated).
      *
@@ -76,8 +80,7 @@ public class Membership {
 
     public void setPlan(MembershipPlan plan) {
         if (plan == null) {
-            System.out.println("Plan cannot be null.");
-            return;
+            throw new IllegalArgumentException("Plan cannot be null.");
         }
         this.plan = plan;
         if (this.startDate != null) {
@@ -92,8 +95,7 @@ public class Membership {
 
     public void setMember(Member member) {
         if (member == null) {
-            System.out.println("Member cannot be null.");
-            return;
+            throw new IllegalArgumentException("Member cannot be null.");
         }
         this.member = member;
     }
@@ -104,10 +106,9 @@ public class Membership {
 
     public void setStartDate(Date startDate) {
         if (startDate == null) {
-            this.startDate = Date.valueOf(LocalDate.now());
-        } else {
-            this.startDate = startDate;
+            throw new IllegalArgumentException("Start date cannot be null.");
         }
+        this.startDate = startDate;
         if (this.plan != null) {
             LocalDate startLocal = this.startDate.toLocalDate();
             this.endDate = Date.valueOf(startLocal.plusMonths(this.plan.getDuration()));
@@ -120,8 +121,7 @@ public class Membership {
 
     public void setEndDate(Date endDate) {
         if (endDate == null) {
-            System.out.println("End date cannot be null.");
-            return;
+            throw new IllegalArgumentException("End date cannot be null.");
         }
         this.endDate = endDate;
     }
@@ -132,9 +132,7 @@ public class Membership {
 
     public void setStatus(MembershipStatus status) {
         if (status == null) {
-            System.out.println("Invalid status. Setting default: PENDING");
-            this.status = MembershipStatus.PENDING;
-            return;
+            throw new IllegalArgumentException("Membership status cannot be null.");
         }
         this.status = status;
     }

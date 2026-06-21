@@ -7,6 +7,10 @@ public class MembershipPlan {
     private double planPrice;
     private int duration;
 
+    public MembershipPlan() {
+        this.planID = java.util.UUID.randomUUID().toString();
+    }
+
     /**
      * Constructor to create a new membership plan (ID is auto-generated).
      *
@@ -42,9 +46,7 @@ public class MembershipPlan {
 
     public void setPlanPrice(double planPrice) {
         if (planPrice < 0.0) {
-            System.out.println("Plan price cannot be negative. Setting to 0.0.");
-            this.planPrice = 0.0;
-            return;
+            throw new IllegalArgumentException("Plan price cannot be negative.");
         }
         this.planPrice = planPrice;
     }
@@ -55,9 +57,7 @@ public class MembershipPlan {
 
     public void setDuration(int duration) {
         if (duration <= 0) {
-            System.out.println("Plan duration must be at least 1 month. Setting to 1.");
-            this.duration = 1;
-            return;
+            throw new IllegalArgumentException("Plan duration must be at least 1 month.");
         }
         this.duration = duration;
     }

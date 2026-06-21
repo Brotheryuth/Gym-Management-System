@@ -32,6 +32,10 @@ public class Payment {
         return "N/A";
     }
 
+    public Payment() {
+        this.id = java.util.UUID.randomUUID().toString();
+    }
+
     /**
      * Constructor for creating a new payment (ID and timestamps auto-generated).
      *
@@ -97,8 +101,7 @@ public class Payment {
 
     public void setMembership(Membership membership) {
         if (membership == null) {
-            System.out.println("Membership cannot be null.");
-            return;
+            throw new IllegalArgumentException("Membership cannot be null.");
         }
         this.membership = membership;
     }
@@ -109,9 +112,7 @@ public class Payment {
 
     public void setBaseAmount(double baseAmount) {
         if (baseAmount < 0.0) {
-            System.out.println("Base amount cannot be negative. Setting to 0.0.");
-            this.baseAmount = 0.0;
-            return;
+            throw new IllegalArgumentException("Base amount cannot be negative.");
         }
         this.baseAmount = baseAmount;
     }
@@ -122,9 +123,7 @@ public class Payment {
 
     public void setDiscount(int discount) {
         if (discount < 0 || discount > 100) {
-            System.out.println("Discount must be between 0% and 100%. Setting to 0%.");
-            this.discount = 0;
-            return;
+            throw new IllegalArgumentException("Discount must be between 0 and 100.");
         }
         this.discount = discount;
     }
@@ -135,9 +134,7 @@ public class Payment {
 
     public void setMethod(PaymentMethod method) {
         if (method == null) {
-            System.out.println("Payment method cannot be null. Setting to BYCASH.");
-            this.method = PaymentMethod.BYCASH;
-            return;
+            throw new IllegalArgumentException("Payment method cannot be null.");
         }
         this.method = method;
     }
@@ -148,9 +145,7 @@ public class Payment {
 
     public void setStatus(PaymentStatus status) {
         if (status == null) {
-            System.out.println("Payment status cannot be null. Setting to PENDING.");
-            this.status = PaymentStatus.PENDING;
-            return;
+            throw new IllegalArgumentException("Payment status cannot be null.");
         }
         this.status = status;
     }

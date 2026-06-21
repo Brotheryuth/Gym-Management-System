@@ -19,6 +19,10 @@ public class Member {
 
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+?[0-9\\s\\-\\(\\)]{7,15}$");
 
+    public Member() {
+        this.id = java.util.UUID.randomUUID().toString();
+    }
+
     public Member(String fullName, Gender gender, String phoneNumber, Date dob, MemberStatus memberStatus) {
         this.id = UUID.randomUUID().toString();
         setFullName(fullName);
@@ -61,10 +65,8 @@ public class Member {
     }
 
     public void setFullName(String fullName) {
-        if (fullName == null || fullName.isBlank() || fullName.trim().isEmpty()) {
-            System.out.println("Invalid name. Setting default name: 'Unknown'");
-            this.fullName = "Unknown";
-            return;
+        if (fullName == null || fullName.isBlank()) {
+            throw new IllegalArgumentException("Full name cannot be null or blank.");
         }
         this.fullName = fullName.trim();
     }
@@ -75,9 +77,7 @@ public class Member {
 
     public void setGender(Gender gender) {
         if (gender == null) {
-            System.out.println("Invalid gender. Setting default: MALE");
-            this.gender = Gender.MALE;
-            return;
+            throw new IllegalArgumentException("Gender cannot be null.");
         }
         this.gender = gender;
     }
@@ -87,15 +87,13 @@ public class Member {
     }
 
     public void setPhoneNumber(String phoneNumber) {
-        if (phoneNumber == null) {
+        if (phoneNumber == null || phoneNumber.trim().equalsIgnoreCase("N/A")) {
             this.phoneNumber = "N/A";
             return;
         }
         String cleanPhone = phoneNumber.trim();
         if (!PHONE_PATTERN.matcher(cleanPhone).matches()) {
-            System.out.println("Invalid phone number. Setting default: N/A");
-            this.phoneNumber = "N/A";
-            return;
+            throw new IllegalArgumentException("Invalid phone number format.");
         }
         this.phoneNumber = cleanPhone;
     }
@@ -106,8 +104,7 @@ public class Member {
 
     public void setDob(Date dob) {
         if (dob == null) {
-            System.out.println("Invalid Date of Birth. Setting default: 18 years ago.");
-            this.dob = Date.valueOf(LocalDate.now().minusYears(18));
+            this.dob = null; // optional in database
             return;
         }
 
@@ -115,9 +112,7 @@ public class Member {
         LocalDate dobLocalDate = dob.toLocalDate();
         int calculatedAge = Period.between(dobLocalDate, LocalDate.now()).getYears();
         if (calculatedAge < 5 || calculatedAge > 100) {
-            System.out.println("Invalid age from Date of Birth (" + calculatedAge + "). Setting default: 18 years ago.");
-            this.dob = Date.valueOf(LocalDate.now().minusYears(18));
-            return;
+            throw new IllegalArgumentException("Age from Date of Birth (" + calculatedAge + ") must be between 5 and 100.");
         }
         this.dob = dob;
     }
@@ -128,9 +123,7 @@ public class Member {
 
     public void setMemberStatus(MemberStatus memberStatus) {
         if (memberStatus == null) {
-            System.out.println("Invalid status. Setting default: INACTIVE");
-            this.memberStatus = MemberStatus.INACTIVE;
-            return;
+            throw new IllegalArgumentException("Member status cannot be null.");
         }
         this.memberStatus = memberStatus;
     }

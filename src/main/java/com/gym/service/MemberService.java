@@ -17,52 +17,60 @@ public class MemberService {
 
     /**
      * register member and check whether it already register
-     * @param member
-     * @return True if member is register successful otherwise return false (already exist)
+     * @param member the member to register
+     * @return True if member is register successful otherwise throws exception
+     * @throws IllegalArgumentException if member is invalid or already exists
      */
     public boolean registerMember(Member member){
-
-        if(member ==null) return false;
+        if(member == null) {
+            throw new IllegalArgumentException("Member data cannot be null.");
+        }
+        
         // validate ID
-        if(memberRepository.findByID(member.getId() ) !=null){
-            System.out.println("Member already register!");
-            return  false;
+        if(member.getId() != null && memberRepository.findByID(member.getId()) != null){
+            throw new IllegalArgumentException("Member with ID " + member.getId() + " is already registered.");
         }
 
         //validate Phone number
-        if(memberRepository.findByPhoneNumber(member.getPhoneNumber()) !=null){
-            System.out.println("Member already exist!");
-            return false;
+        if(member.getPhoneNumber() != null && memberRepository.findByPhoneNumber(member.getPhoneNumber()) != null){
+            throw new IllegalArgumentException("Member with phone number " + member.getPhoneNumber() + " already exists.");
         }
 
         return memberRepository.insert(member);
     }
+
     public Member createMember(String fullName, Gender gender, Date dob, String phoneNumber){
-        Member newMember = new Member(fullName,gender,phoneNumber, dob , MemberStatus.INACTIVE);
-        boolean success = memberRepository.insert(newMember);
-        return success? newMember : null;
+        Member newMember = new Member(fullName, gender, phoneNumber, dob, MemberStatus.INACTIVE);
+        registerMember(newMember);
+        return newMember;
     }
 
-    public Member createMember(String fullName , String phoneNumber){
-        Member newMember = new Member(fullName,Gender.MALE,phoneNumber, null,MemberStatus.INACTIVE);
-        boolean success = memberRepository.insert(newMember);
-        return success? newMember : null;
+    public Member createMember(String fullName, String phoneNumber){
+        Member newMember = new Member(fullName, Gender.MALE, phoneNumber, null, MemberStatus.INACTIVE);
+        registerMember(newMember);
+        return newMember;
     }
-
 
     public Member searchByID (String ID){
-        if(ID ==null || ID.isBlank()){
+        if(ID == null || ID.isBlank()){
             return null;
         }
         return memberRepository.findByID(ID.trim());
     }
 
     public Member searchByPhoneNumber(String phoneNumber){
-        if(phoneNumber==null || phoneNumber.isBlank()) return  null;
+        if(phoneNumber == null || phoneNumber.isBlank()) return null;
         return memberRepository.findByPhoneNumber(phoneNumber);
     }
 
     public List<Member> findAll(){
         return memberRepository.findAll();
+    }
+
+    public boolean deleteMember(String id) {
+        if (id == null || id.isBlank()) {
+            throw new IllegalArgumentException("Member ID cannot be null or blank.");
+        }
+        return memberRepository.delete(id.trim());
     }
 }

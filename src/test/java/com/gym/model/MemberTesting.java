@@ -24,13 +24,13 @@ public class MemberTesting {
     }
 
     @Test
-    public void testSetDob_ShouldFallbackToDefaultAgeIfTooYoung() {
+    public void testSetDob_ShouldThrowExceptionIfTooYoung() {
         // 1. Arrange: Create a member with a birthdate only 2 years ago (invalid: must be >= 5)
         Date invalidDob = Date.valueOf(LocalDate.now().minusYears(2));
-        Member member = new Member("Baby Doe", Gender.MALE, "123456789", invalidDob, MemberStatus.ACTIVE);
 
-        // 2. Act & Assert: The setter logs a warning and falls back to 18 years ago
-        int expectedAge = 18;
-        assertEquals(expectedAge, member.getAge());
+        // 2. Act & Assert: Verify that creating a member with this DOB throws an IllegalArgumentException
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Member("Baby Doe", Gender.MALE, "123456789", invalidDob, MemberStatus.ACTIVE);
+        });
     }
 }

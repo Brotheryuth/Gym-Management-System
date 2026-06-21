@@ -1,5 +1,7 @@
 package com.gym;
 
+import com.gym.repository.MemberRepository;
+import com.gym.service.MemberService;
 import com.gym.util.DatabaseConnection;
 import com.gym.util.DatabaseInitializer;
 
@@ -20,5 +22,5 @@ public class Main {
             e.printStackTrace();
         }
     }
-    }
+}
 
