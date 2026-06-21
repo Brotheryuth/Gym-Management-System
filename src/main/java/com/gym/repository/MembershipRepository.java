@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MembershipRepository {
-    private Membership membership;
+
     private  Connection connection;
 
     public MembershipRepository(Connection connection){
