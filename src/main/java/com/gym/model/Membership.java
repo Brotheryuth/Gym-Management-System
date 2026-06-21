@@ -45,6 +45,10 @@ public class Membership {
         setStatus(MembershipStatus.PENDING);
     }
 
+    public Membership(String memberID , String planID , Date startDate){
+
+    }
+
     /**
      * Constructor to load an existing membership from the database.
      *

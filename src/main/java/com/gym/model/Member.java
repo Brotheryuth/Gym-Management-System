@@ -39,9 +39,9 @@ public class Member {
         setDob(dob);
         setMemberStatus(memberStatus);
     }
+
     /**
      * Dynamically calculates the age based on the Date of Birth (dob).
-
      */
     public int getAge() {
         if (this.dob == null) {
@@ -139,18 +139,18 @@ public class Member {
     public String toString() {
         return String.format(
                 """
-                ----------------------------------
-                        MEMBER INFORMATION
-                ----------------------------------
-                ID              : %s
-                Name            : %s
-                Gender          : %s
-                Phone Number    : %s
-                Date of Birth   : %s
-                Age             : %d
-                Status          : %s
-                ----------------------------------
-                """,
+                        ----------------------------------
+                                MEMBER INFORMATION
+                        ----------------------------------
+                        ID              : %s
+                        Name            : %s
+                        Gender          : %s
+                        Phone Number    : %s
+                        Date of Birth   : %s
+                        Age             : %d
+                        Status          : %s
+                        ----------------------------------
+                        """,
                 this.id,
                 this.fullName,
                 this.gender,
