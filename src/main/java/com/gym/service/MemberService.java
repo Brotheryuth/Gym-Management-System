@@ -35,6 +35,9 @@ public class MemberService {
         if(member.getPhoneNumber() != null && memberRepository.findByPhoneNumber(member.getPhoneNumber()) != null){
             throw new IllegalArgumentException("Member with phone number " + member.getPhoneNumber() + " already exists.");
         }
+        if(member.getMemberStatus()==null){
+            member.setMemberStatus(MemberStatus.INACTIVE);
+        }
 
         return memberRepository.insert(member);
     }

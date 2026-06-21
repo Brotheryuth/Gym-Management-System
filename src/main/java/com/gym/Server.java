@@ -24,7 +24,7 @@ public class Server {
             MemberService memberService = new MemberService(memRepo);
             MemberController memberController = new MemberController(memberService);
             App app = new App(memberController);
-            app.start(8080);
+            app.start(7070);
 
         } catch (Exception e) {
             e.printStackTrace();

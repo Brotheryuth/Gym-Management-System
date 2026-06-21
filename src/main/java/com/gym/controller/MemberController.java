@@ -48,9 +48,13 @@ public class MemberController {
         try{
             Member newMember= ctx.bodyAsClass(Member.class); // = req.body
         if(newMember ==null) throw new IllegalArgumentException("Request Body is Empty");
-        memberService.registerMember(newMember);
 
+        if(memberService.registerMember(newMember)){
         ctx.status(HttpStatus.CREATED).json(newMember);
+        }
+        else{
+            throw new IllegalStateException();
+        }
 
         }catch (IllegalArgumentException e ){
             ctx.status(HttpStatus.BAD_REQUEST).result(e.getMessage());
