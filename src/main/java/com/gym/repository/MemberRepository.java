@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A repo class that perform CRUD operation
+ * A repo class that perform CRUD operation for Member
  */
 public class MemberRepository {
     private Connection connection;
@@ -18,75 +18,75 @@ public class MemberRepository {
         this.connection=getConnection;
     }
 
+    private void setGeneratedId(Member member, int generatedId) {
+        try {
+            java.lang.reflect.Field idField = Member.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(member, String.valueOf(generatedId));
+        } catch (Exception e) {
+            System.out.println("Reflection error updating ID: " + e.getMessage());
+        }
+    }
+
     /**
-     * @brief retrive data from database and insert  it to member class
-     * @param member
+     * Retrieve data from database and insert it to member class
+     * @param member the member to insert
      * @return true if insert successful
      */
-    public  boolean insert (Member member){
-        String script = "INSERT INTO members (id, fullName, gender, phoneNumber, dob, status) values (?,?,?,?,?,?)";
-        try(PreparedStatement statement = connection.prepareStatement(script)){
-            statement.setString(1,member.getId());
-            statement.setString(2, member.getFullName());
-            // since gender we are using enum so we can access it using .name() with ternery
-            statement.setString(3 , member.getGender() != null ? member.getGender().name() : null);
-            statement.setString(4, member.getPhoneNumber());
-            statement.setDate(5, member.getDob());
-            statement.setString(6, member.getMemberStatus().name());
+    public boolean insert (Member member){
+        if (member == null) return false;
+        String script = "INSERT INTO member (fullName, gender, phoneNumber, dob, status) VALUES (?,?,?,?,?)";
+        try(PreparedStatement statement = connection.prepareStatement(script, Statement.RETURN_GENERATED_KEYS)){
+            statement.setString(1, member.getFullName());
+            statement.setString(2 , member.getGender() != null ? member.getGender().name() : null);
+            statement.setString(3, member.getPhoneNumber());
+            statement.setDate(4, member.getDob());
+            statement.setString(5, member.getMemberStatus() != null ? member.getMemberStatus().name() : null);
 
-            statement.executeUpdate();
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows == 0) {
+                return false;
+            }
+
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    setGeneratedId(member, generatedKeys.getInt(1));
+                }
+            }
             return true;
         }catch (SQLException e ){
             e.printStackTrace();
-        return false;
+            return false;
         }
-    }// close insert
+    }
 
     /**
-     *
+     * Find member by ID
      * @param id to search for that id
-     * @return
+     * @return Member object or null
      */
-    public  Member findByID(String id ){
-        String queryScript = " select * from member where id =? " ;
+    public Member findByID(String id ){
+        if (id == null || id.isBlank()) return null;
+        String queryScript = "SELECT * FROM member WHERE id = ?" ;
         try(PreparedStatement statement = connection.prepareStatement(queryScript)){
-            statement.setString(1 , id);
+            try {
+                statement.setInt(1 , Integer.parseInt(id.trim()));
+            } catch (NumberFormatException e) {
+                return null;
+            }
 
             try (ResultSet rs = statement.executeQuery()){
                 if (rs.next()){
-                    String dbID = rs.getString("id");
+                    String dbID = String.valueOf(rs.getInt("id"));
                     String fullName = rs.getString("fullName");
                     String genderString = rs.getString("gender");
                     String phoneNumber = rs.getString("phoneNumber");
                     Date dob = rs.getDate("dob");
                     String statusStr = rs.getString("status");
-                    //parse
-                    Gender gender = genderString !=null? Gender.valueOf(genderString.toUpperCase()) : Gender.MALE;
-                    MemberStatus status = statusStr !=null ? MemberStatus.valueOf(statusStr.toUpperCase()) : MemberStatus.INACTIVE;
-                    return  new Member(dbID , fullName,gender,phoneNumber,dob,status);
-                }
-            }
-        }catch (SQLException e ){
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public Member findByPhoneNumber(String phone){
-        String query  ="select * from member where phoneNumber = ? ";
-        try(PreparedStatement statement  = connection.prepareStatement(query)){
-            try(ResultSet rs = statement.executeQuery()){
-                if(rs.next()){
-                    String id  = rs.getString("id");
-                    String fullName = rs.getString("fullname");
-                    String genderString = rs.getString("gender");
-                    String phoneNumber = rs.getString("phoneNumber");
-                    Date dob = rs.getDate("dob");
-                    String statusStr = rs.getString("status");
-                    //parse
-                    Gender gender = genderString !=null? Gender.valueOf(genderString.toUpperCase()) : Gender.MALE;
-                    MemberStatus status = statusStr !=null ? MemberStatus.valueOf(statusStr.toUpperCase()) : MemberStatus.INACTIVE;
-                    return  new Member(id , fullName,gender,phoneNumber,dob,status);
+                    
+                    Gender gender = genderString != null ? Gender.valueOf(genderString.toUpperCase()) : Gender.MALE;
+                    MemberStatus status = statusStr != null ? MemberStatus.valueOf(statusStr.toUpperCase()) : MemberStatus.INACTIVE;
+                    return new Member(dbID, fullName, gender, phoneNumber, dob, status);
                 }
             }
         }catch (SQLException e ){
@@ -96,91 +96,119 @@ public class MemberRepository {
     }
 
     /**
-     * query to get all member
-     * @return
+     * Find member by Phone Number
+     * @param phone phone number to search
+     * @return Member object or null
+     */
+    public Member findByPhoneNumber(String phone){
+        if (phone == null || phone.isBlank()) return null;
+        String query = "SELECT * FROM member WHERE phoneNumber = ?";
+        try(PreparedStatement statement = connection.prepareStatement(query)){
+            statement.setString(1, phone.trim());
+            try(ResultSet rs = statement.executeQuery()){
+                if(rs.next()){
+                    String id = String.valueOf(rs.getInt("id"));
+                    String fullName = rs.getString("fullName");
+                    String genderString = rs.getString("gender");
+                    String phoneNumber = rs.getString("phoneNumber");
+                    Date dob = rs.getDate("dob");
+                    String statusStr = rs.getString("status");
+                    
+                    Gender gender = genderString != null ? Gender.valueOf(genderString.toUpperCase()) : Gender.MALE;
+                    MemberStatus status = statusStr != null ? MemberStatus.valueOf(statusStr.toUpperCase()) : MemberStatus.INACTIVE;
+                    return new Member(id, fullName, gender, phoneNumber, dob, status);
+                }
+            }
+        }catch (SQLException e ){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Query to get all members
+     * @return list of members
      */
     public List<Member> findAll(){
-        String query = "select * from member";
+        String query = "SELECT * FROM member";
         List<Member> members = new ArrayList<>();
         try(PreparedStatement statement = connection.prepareStatement(query)){
             try(ResultSet rs = statement.executeQuery()){
                 while(rs.next()){
-                    String dbID = rs.getString("id");
+                    String dbID = String.valueOf(rs.getInt("id"));
                     String fullName = rs.getString("fullName");
                     String genderString = rs.getString("gender");
                     String phoneNumber = rs.getString("phoneNumber");
                     Date dob = rs.getDate("dob");
                     String statusStr = rs.getString("status");
-                    //parse
-                    Gender gender = genderString !=null? Gender.valueOf(genderString.toUpperCase()) : Gender.MALE;
-                    MemberStatus status = statusStr !=null ? MemberStatus.valueOf(statusStr.toUpperCase()) : MemberStatus.INACTIVE;
-                    members.add(new Member(dbID,fullName,gender,phoneNumber,dob,status));
+                    
+                    Gender gender = genderString != null ? Gender.valueOf(genderString.toUpperCase()) : Gender.MALE;
+                    MemberStatus status = statusStr != null ? MemberStatus.valueOf(statusStr.toUpperCase()) : MemberStatus.INACTIVE;
+                    members.add(new Member(dbID, fullName, gender, phoneNumber, dob, status));
                 }
             }
         }catch (SQLException e ){
-            System.out.println("Erorr:"+e.getMessage());
+            System.out.println("Error: " + e.getMessage());
             e.printStackTrace();
         }
-        return  members;
+        return members;
     }
 
     /**
-     * @brief Update exiting value
+     * Update existing member values
      * @param member target member to update
-     *
+     * @return true if successful
      */
-    public  boolean update(Member member ){
-        String query = "Update member set fullName =? , gender=? , phoneNumber=? , dob = ? , status =? where id=?";
-       try(PreparedStatement statement = connection.prepareStatement(query)){
-           statement.setString(1, member.getFullName());
-           statement.setString(2,member.getGender() !=null ? member.getGender().name() : null);
-           statement.setString(3,member.getPhoneNumber());
-           statement.setDate(4,member.getDob());
-           statement.setString(5,member.getMemberStatus() !=null ? member.getMemberStatus().name() : null);
-           statement.setString(6, member.getId());
+    public boolean update(Member member){
+        if (member == null) return false;
+        String query = "UPDATE member SET fullName = ?, gender = ?, phoneNumber = ?, dob = ?, status = ? WHERE id = ?";
+        try(PreparedStatement statement = connection.prepareStatement(query)){
+            statement.setString(1, member.getFullName());
+            statement.setString(2, member.getGender() != null ? member.getGender().name() : null);
+            statement.setString(3, member.getPhoneNumber());
+            statement.setDate(4, member.getDob());
+            statement.setString(5, member.getMemberStatus() != null ? member.getMemberStatus().name() : null);
+            statement.setInt(6, Integer.parseInt(member.getId()));
 
-           int rowAffect = statement.executeUpdate();
-           return rowAffect>0;
+            int rowAffect = statement.executeUpdate();
+            return rowAffect > 0;
 
-       }catch (SQLException e ){
-           System.out.println("Error: Update member"+e.getMessage());
-           e.printStackTrace();
-           return false;
-       }
+        }catch (SQLException | NumberFormatException e ){
+            System.out.println("Error updating member: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
-     * Delete member by accept the whole member as argument
+     * Delete member
      * @param member the target member
-     * @return
+     * @return true if successful
      */
-    public  boolean delete(Member member){
-        String query = "delete from member where id = ? ";
-        try(PreparedStatement statement = connection.prepareStatement(query)){
-            statement.setString(1,member.getId());
-            int rowAffect = statement.executeUpdate();
-            return rowAffect>0;
-        }catch (SQLException e ){
-            System.out.println("Error: Delete Column "+e.getMessage());
-            return false;
-        }
+    public boolean delete(Member member){
+        if (member == null) return false;
+        return delete(member.getId());
     }
 
     /**
-     * Delete member by accept id as argument
-     * @param id
-     * @return
+     * Delete member by ID
+     * @param id the target member ID
+     * @return true if successful
      */
-    public boolean delete(String id ){
-        String query = "delete from member where id =? ";
+    public boolean delete(String id){
+        if (id == null || id.isBlank()) return false;
+        String query = "DELETE FROM member WHERE id = ?";
         try(PreparedStatement statement = connection.prepareStatement(query)){
-            statement.setString(1,id);
+            try {
+                statement.setInt(1, Integer.parseInt(id.trim()));
+            } catch (NumberFormatException e) {
+                return false;
+            }
             int rowAffect = statement.executeUpdate();
-            return rowAffect> 0 ;
+            return rowAffect > 0;
         }catch (SQLException e ){
-            System.out.println("Error Delete Member "+e.getMessage());
+            System.out.println("Error deleting member: " + e.getMessage());
             return false;
         }
-
     }
 }

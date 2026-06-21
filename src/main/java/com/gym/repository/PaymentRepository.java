@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,47 +20,60 @@ public class PaymentRepository {
         this.connection = connection;
     }
 
+    private void setGeneratedId(Payment payment, int generatedId) {
+        try {
+            java.lang.reflect.Field idField = Payment.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(payment, String.valueOf(generatedId));
+        } catch (Exception e) {
+            System.out.println("Reflection error updating ID: " + e.getMessage());
+        }
+    }
+
     /**
      * Helper method to map a single database row to a Payment object.
      */
     private Payment mapRowToPayment(ResultSet rs) throws SQLException {
         // 1. Reconstruct Member
         Member member = new Member(
-                rs.getString("m_id"),
-                rs.getString("full_name"),
+                String.valueOf(rs.getInt("m_id")),
+                rs.getString("fullName"),
                 Gender.valueOf(rs.getString("gender").toUpperCase()),
-                rs.getString("phone_number"),
+                rs.getString("phoneNumber"),
                 rs.getDate("dob"),
                 MemberStatus.valueOf(rs.getString("m_status").toUpperCase())
         );
 
         // 2. Reconstruct MembershipPlan
         MembershipPlan plan = new MembershipPlan(
-                rs.getString("plan_id"),
-                rs.getDouble("price"),
+                String.valueOf(rs.getInt("plan_id")),
+                rs.getDouble("planPrice"),
                 rs.getInt("duration")
         );
 
         // 3. Reconstruct Membership
         Membership membership = new Membership(
-                rs.getString("ms_id"),
+                String.valueOf(rs.getInt("ms_id")),
                 member,
                 plan,
-                rs.getDate("start_date"),
-                rs.getDate("end_date"),
+                rs.getDate("startDate"),
+                rs.getDate("endDate"),
                 MembershipStatus.valueOf(rs.getString("ms_status").toUpperCase())
         );
 
         // 4. Reconstruct Payment using getObject for LocalDateTime mapping
+        double dbDiscount = rs.getDouble("discount");
+        int discountPercentage = (int) Math.round(dbDiscount * 100.0);
+
         return new Payment(
-                rs.getString("p_id"),
+                String.valueOf(rs.getInt("p_id")),
                 membership,
-                rs.getDouble("base_amount"),
-                rs.getInt("discount"),
-                PaymentMethod.valueOf(rs.getString("payment_method").toUpperCase()),
-                PaymentStatus.valueOf(rs.getString("payment_status").toUpperCase()),
-                rs.getObject("create_at", LocalDateTime.class),
-                rs.getObject("payment_date", LocalDateTime.class)
+                rs.getDouble("baseAmount"),
+                discountPercentage,
+                PaymentMethod.valueOf(rs.getString("method").toUpperCase()),
+                PaymentStatus.valueOf(rs.getString("p_status").toUpperCase()),
+                rs.getObject("createAt", LocalDateTime.class),
+                rs.getObject("paymentDate", LocalDateTime.class)
         );
     }
 
@@ -72,13 +86,13 @@ public class PaymentRepository {
             return false;
         }
 
-        String sql = "INSERT INTO payments (id, membership_id, base_amount, discount, payment_method, payment_status, create_at, payment_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO payment (membershipID, baseAmount, finalAmount, discount, method, status, createAt, paymentDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, payment.getId());
-            stmt.setString(2, payment.getMembership().getId());
-            stmt.setDouble(3, payment.getBaseAmount());
-            stmt.setInt(4, payment.getDiscount());
+        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setInt(1, Integer.parseInt(payment.getMembership().getId()));
+            stmt.setDouble(2, payment.getBaseAmount());
+            stmt.setDouble(3, payment.getFinalAmount());
+            stmt.setDouble(4, (double) payment.getDiscount() / 100.0);
             stmt.setString(5, payment.getMethod() != null ? payment.getMethod().name() : null);
             stmt.setString(6, payment.getStatus() != null ? payment.getStatus().name() : null);
 
@@ -86,10 +100,19 @@ public class PaymentRepository {
             stmt.setObject(7, payment.getCreateAt());
             stmt.setObject(8, payment.getPaymentDate());
 
-            stmt.executeUpdate();
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                return false;
+            }
+
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    setGeneratedId(payment, generatedKeys.getInt(1));
+                }
+            }
             return true;
 
-        } catch (SQLException e) {
+        } catch (SQLException | NumberFormatException e) {
             System.out.println("Error inserting payment: " + e.getMessage());
             e.printStackTrace();
             return false;
@@ -102,17 +125,17 @@ public class PaymentRepository {
     public boolean update(Payment payment) {
         if (payment == null) return false;
 
-        String sql = "UPDATE payments SET payment_status = ?, payment_date = ? WHERE id = ?";
+        String sql = "UPDATE payment SET status = ?, paymentDate = ? WHERE id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, payment.getStatus() != null ? payment.getStatus().name() : null);
             stmt.setObject(2, payment.getPaymentDate()); // Good Practice: Use setObject for LocalDateTime
-            stmt.setString(3, payment.getId());
+            stmt.setInt(3, Integer.parseInt(payment.getId()));
 
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
 
-        } catch (SQLException e) {
+        } catch (SQLException | NumberFormatException e) {
             System.out.println("Error updating payment: " + e.getMessage());
             e.printStackTrace();
             return false;
@@ -123,21 +146,27 @@ public class PaymentRepository {
      * Finds a payment by its unique ID.
      */
     public Payment findById(String id) {
+        if (id == null || id.isBlank()) return null;
         String sql = """
             SELECT 
-                p.id AS p_id, p.base_amount, p.discount, p.payment_method, p.payment_status, p.create_at, p.payment_date,
-                ms.id AS ms_id, ms.start_date, ms.end_date, ms.status AS ms_status,
-                m.id AS m_id, m.full_name, m.gender, m.phone_number, m.dob, m.status AS m_status,
-                plan.id AS plan_id, plan.price, plan.duration
-            FROM payments p
-            JOIN memberships ms ON p.membership_id = ms.id
-            JOIN members m ON ms.member_id = m.id
-            JOIN membership_plans plan ON ms.plan_id = plan.id
+                p.id AS p_id, p.baseAmount, p.finalAmount, p.discount, p.method, p.status AS p_status, p.createAt, p.paymentDate,
+                ms.id AS ms_id, ms.startDate, ms.endDate, ms.status AS ms_status,
+                m.id AS m_id, m.fullName, m.gender, m.phoneNumber, m.dob, m.status AS m_status,
+                plan.id AS plan_id, plan.planPrice, plan.duration
+            FROM payment p
+            JOIN memberships ms ON p.membershipID = ms.id
+            JOIN member m ON ms.memberID = m.id
+            JOIN membershipPlan plan ON ms.planID = plan.id
             WHERE p.id = ?
         """;
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, id);
+            try {
+                stmt.setInt(1, Integer.parseInt(id.trim()));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return mapRowToPayment(rs);
@@ -157,14 +186,14 @@ public class PaymentRepository {
         List<Payment> payments = new ArrayList<>();
         String sql = """
             SELECT 
-                p.id AS p_id, p.base_amount, p.discount, p.payment_method, p.payment_status, p.create_at, p.payment_date,
-                ms.id AS ms_id, ms.start_date, ms.end_date, ms.status AS ms_status,
-                m.id AS m_id, m.full_name, m.gender, m.phone_number, m.dob, m.status AS m_status,
-                plan.id AS plan_id, plan.price, plan.duration
-            FROM payments p
-            JOIN memberships ms ON p.membership_id = ms.id
-            JOIN members m ON ms.member_id = m.id
-            JOIN membership_plans plan ON ms.plan_id = plan.id
+                p.id AS p_id, p.baseAmount, p.finalAmount, p.discount, p.method, p.status AS p_status, p.createAt, p.paymentDate,
+                ms.id AS ms_id, ms.startDate, ms.endDate, ms.status AS ms_status,
+                m.id AS m_id, m.fullName, m.gender, m.phoneNumber, m.dob, m.status AS m_status,
+                plan.id AS plan_id, plan.planPrice, plan.duration
+            FROM payment p
+            JOIN memberships ms ON p.membershipID = ms.id
+            JOIN member m ON ms.memberID = m.id
+            JOIN membershipPlan plan ON ms.planID = plan.id
         """;
 
         try (PreparedStatement stmt = connection.prepareStatement(sql);
@@ -184,10 +213,15 @@ public class PaymentRepository {
      * Deletes a payment by ID.
      */
     public boolean delete(String id) {
-        String sql = "DELETE FROM payments WHERE id = ?";
+        if (id == null || id.isBlank()) return false;
+        String sql = "DELETE FROM payment WHERE id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, id);
+            try {
+                stmt.setInt(1, Integer.parseInt(id.trim()));
+            } catch (NumberFormatException e) {
+                return false;
+            }
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {

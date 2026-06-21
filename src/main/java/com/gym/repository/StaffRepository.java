@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,16 @@ public class StaffRepository {
 
     public StaffRepository(Connection connection) {
         this.connection = connection;
+    }
+
+    private void setGeneratedId(Staff staff, int generatedId) {
+        try {
+            java.lang.reflect.Field idField = Staff.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(staff, String.valueOf(generatedId));
+        } catch (Exception e) {
+            System.out.println("Reflection error updating ID: " + e.getMessage());
+        }
     }
 
     /**
@@ -30,23 +41,31 @@ public class StaffRepository {
         if (staff == null) return false;
 
         String sql = """
-            INSERT INTO staff (id, name, gender, dob, salary, phoneNumber, password, role, shift, hire_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO staff (name, gender, dob, salary, phoneNumber, password, role, shift, hireDate)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, staff.getId());
-            stmt.setString(2, staff.getName());
-            stmt.setString(3, staff.getGender() != null ? staff.getGender().name() : null);
-            stmt.setDate(4, staff.getDob());
-            stmt.setDouble(5, staff.getSalary());
-            stmt.setString(6, staff.getPhoneNumber());
-            stmt.setString(7, staff.getPassword());
-            stmt.setString(8, staff.getRole() != null ? staff.getRole().name() : null);
-            stmt.setString(9, staff.getShift() != null ? staff.getShift().name() : null);
-            stmt.setDate(10, staff.getHireDate());
+        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, staff.getName());
+            stmt.setString(2, staff.getGender() != null ? staff.getGender().name() : null);
+            stmt.setDate(3, staff.getDob());
+            stmt.setDouble(4, staff.getSalary());
+            stmt.setString(5, staff.getPhoneNumber());
+            stmt.setString(6, staff.getPassword());
+            stmt.setString(7, staff.getRole() != null ? staff.getRole().name() : null);
+            stmt.setString(8, staff.getShift() != null ? staff.getShift().name() : null);
+            stmt.setDate(9, staff.getHireDate());
 
-            stmt.executeUpdate();
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                return false;
+            }
+
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    setGeneratedId(staff, generatedKeys.getInt(1));
+                }
+            }
             return true;
 
         } catch (SQLException e) {
@@ -67,7 +86,7 @@ public class StaffRepository {
 
         String sql = """
             UPDATE staff 
-            SET name = ?, gender = ?, dob = ?, salary = ?, phoneNumber = ?, password = ?, role = ?, shift = ?, hire_date = ?
+            SET name = ?, gender = ?, dob = ?, salary = ?, phoneNumber = ?, password = ?, role = ?, shift = ?, hireDate = ?
             WHERE id = ?
         """;
 
@@ -81,12 +100,12 @@ public class StaffRepository {
             stmt.setString(7, staff.getRole() != null ? staff.getRole().name() : null);
             stmt.setString(8, staff.getShift() != null ? staff.getShift().name() : null);
             stmt.setDate(9, staff.getHireDate());
-            stmt.setString(10, staff.getId());
+            stmt.setInt(10, Integer.parseInt(staff.getId()));
 
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
 
-        } catch (SQLException e) {
+        } catch (SQLException | NumberFormatException e) {
             System.out.println("Error updating staff: " + e.getMessage());
             e.printStackTrace();
             return false;
@@ -100,14 +119,19 @@ public class StaffRepository {
      * @return The Staff object if found, or null
      */
     public Staff findById(String id) {
+        if (id == null || id.isBlank()) return null;
         String sql = "SELECT * FROM staff WHERE id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, id);
+            try {
+                stmt.setInt(1, Integer.parseInt(id.trim()));
+            } catch (NumberFormatException e) {
+                return null;
+            }
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    String dbId = rs.getString("id");
+                    String dbId = String.valueOf(rs.getInt("id"));
                     String name = rs.getString("name");
                     String genderStr = rs.getString("gender");
                     Date dob = rs.getDate("dob");
@@ -116,7 +140,7 @@ public class StaffRepository {
                     String password = rs.getString("password");
                     String roleStr = rs.getString("role");
                     String shiftStr = rs.getString("shift");
-                    Date hireDate = rs.getDate("hire_date");
+                    Date hireDate = rs.getDate("hireDate");
 
                     Gender gender = genderStr != null ? Gender.valueOf(genderStr.toUpperCase()) : Gender.MALE;
                     StaffRole role = roleStr != null ? StaffRole.valueOf(roleStr.toUpperCase()) : StaffRole.CASHIER;
@@ -145,7 +169,7 @@ public class StaffRepository {
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                String dbId = rs.getString("id");
+                String dbId = String.valueOf(rs.getInt("id"));
                 String name = rs.getString("name");
                 String genderStr = rs.getString("gender");
                 Date dob = rs.getDate("dob");
@@ -154,7 +178,7 @@ public class StaffRepository {
                 String password = rs.getString("password");
                 String roleStr = rs.getString("role");
                 String shiftStr = rs.getString("shift");
-                Date hireDate = rs.getDate("hire_date");
+                Date hireDate = rs.getDate("hireDate");
 
                 Gender gender = genderStr != null ? Gender.valueOf(genderStr.toUpperCase()) : Gender.MALE;
                 StaffRole role = roleStr != null ? StaffRole.valueOf(roleStr.toUpperCase()) : StaffRole.CASHIER;
@@ -176,10 +200,15 @@ public class StaffRepository {
      * @return true if successful, false otherwise
      */
     public boolean delete(String id) {
+        if (id == null || id.isBlank()) return false;
         String sql = "DELETE FROM staff WHERE id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, id);
+            try {
+                stmt.setInt(1, Integer.parseInt(id.trim()));
+            } catch (NumberFormatException e) {
+                return false;
+            }
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {

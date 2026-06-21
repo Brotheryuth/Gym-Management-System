@@ -6,18 +6,26 @@ import com.gym.enums.MembershipStatus;
 import com.gym.model.Member;
 import com.gym.model.Membership;
 import com.gym.model.MembershipPlan;
-import kotlin.jvm.internal.PackageReference;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MembershipRepository {
-
-    private  Connection connection;
+    private Connection connection;
 
     public MembershipRepository(Connection connection){
         this.connection=connection;
+    }
+
+    private void setGeneratedId(Membership membership, int generatedId) {
+        try {
+            java.lang.reflect.Field idField = Membership.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(membership, String.valueOf(generatedId));
+        } catch (Exception e) {
+            System.out.println("Reflection error updating ID: " + e.getMessage());
+        }
     }
 
     /**
@@ -32,20 +40,28 @@ public class MembershipRepository {
             return false;
         }
 
-        String sql = "INSERT INTO memberships (id, member_id, plan_id, start_date, end_date, status) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO memberships (planID, memberID, startDate, endDate, status) VALUES (?, ?, ?, ?, ?)";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, membership.getId());
-            stmt.setString(2, membership.getMember().getId());
-            stmt.setString(3, membership.getPlan().getPlanID());
-            stmt.setDate(4, membership.getStartDate());
-            stmt.setDate(5, membership.getEndDate());
-            stmt.setString(6, membership.getStatus() != null ? membership.getStatus().name() : null);
+        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setInt(1, Integer.parseInt(membership.getPlan().getPlanID()));
+            stmt.setInt(2, Integer.parseInt(membership.getMember().getId()));
+            stmt.setDate(3, membership.getStartDate());
+            stmt.setDate(4, membership.getEndDate());
+            stmt.setString(5, membership.getStatus() != null ? membership.getStatus().name() : null);
 
-            stmt.executeUpdate();
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                return false;
+            }
+
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    setGeneratedId(membership, generatedKeys.getInt(1));
+                }
+            }
             return true;
 
-        } catch (SQLException e) {
+        } catch (SQLException | NumberFormatException e) {
             System.out.println("Error inserting membership: " + e.getMessage());
             e.printStackTrace();
             return false;
@@ -64,25 +80,26 @@ public class MembershipRepository {
             return false;
         }
 
-        String sql = "UPDATE memberships SET member_id = ?, plan_id = ?, start_date = ?, end_date = ?, status = ? WHERE id = ?";
+        String sql = "UPDATE memberships SET planID = ?, memberID = ?, startDate = ?, endDate = ?, status = ? WHERE id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, membership.getMember().getId());
-            stmt.setString(2, membership.getPlan().getPlanID());
+            stmt.setInt(1, Integer.parseInt(membership.getPlan().getPlanID()));
+            stmt.setInt(2, Integer.parseInt(membership.getMember().getId()));
             stmt.setDate(3, membership.getStartDate());
             stmt.setDate(4, membership.getEndDate());
             stmt.setString(5, membership.getStatus() != null ? membership.getStatus().name() : null);
-            stmt.setString(6, membership.getId());
+            stmt.setInt(6, Integer.parseInt(membership.getId()));
 
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
 
-        } catch (SQLException e) {
+        } catch (SQLException | NumberFormatException e) {
             System.out.println("Error updating membership: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
+
     /**
      * Deletes a membership record from the database by its unique ID.
      *
@@ -90,10 +107,15 @@ public class MembershipRepository {
      * @return true if deleted successfully, false otherwise
      */
     public boolean delete(String id) {
+        if (id == null || id.isBlank()) return false;
         String sql = "DELETE FROM memberships WHERE id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, id);
+            try {
+                stmt.setInt(1, Integer.parseInt(id.trim()));
+            } catch (NumberFormatException e) {
+                return false;
+            }
 
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -115,27 +137,25 @@ public class MembershipRepository {
         if (membership == null) {
             return false;
         }
-        return delete(membership.getId()); // Delegate to the delete(String id) method to keep code DRY
+        return delete(membership.getId());
     }
-
 
     public List<Membership> findAll() {
         List<Membership> memberships = new ArrayList<>();
         String sql = """
             SELECT 
-                ms.id AS ms_id, ms.start_date, ms.end_date, ms.status AS ms_status,
-                m.id AS m_id, m.full_name, m.gender, m.phone_number, m.dob, m.status AS m_status,
-                p.id AS p_id, p.price, p.duration
+                ms.id AS ms_id, ms.startDate, ms.endDate, ms.status AS ms_status,
+                m.id AS m_id, m.fullName, m.gender, m.phoneNumber, m.dob, m.status AS m_status,
+                p.id AS p_id, p.planPrice, p.duration
             FROM memberships ms 
-            JOIN members m ON ms.member_id = m.id 
-            JOIN membership_plans p ON ms.plan_id = p.id
+            JOIN member m ON ms.memberID = m.id 
+            JOIN membershipPlan p ON ms.planID = p.id
         """;
 
         try (PreparedStatement stmt = connection.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-
                 memberships.add(mapRowToMembership(rs));
             }
         } catch (SQLException e) {
@@ -146,58 +166,72 @@ public class MembershipRepository {
     }
 
     public Membership findByID(String id){
+        if (id == null || id.isBlank()) return null;
         String sql = """
             SELECT 
-                ms.id AS ms_id, ms.start_date, ms.end_date, ms.status AS ms_status,
-                m.id AS m_id, m.full_name, m.gender, m.phone_number, m.dob, m.status AS m_status,
-                p.id AS p_id, p.price, p.duration
+                ms.id AS ms_id, ms.startDate, ms.endDate, ms.status AS ms_status,
+                m.id AS m_id, m.fullName, m.gender, m.phoneNumber, m.dob, m.status AS m_status,
+                p.id AS p_id, p.planPrice, p.duration
             FROM memberships ms 
-            JOIN members m ON ms.member_id = m.id 
-            JOIN membership_plans p ON ms.plan_id = p.id
+            JOIN member m ON ms.memberID = m.id 
+            JOIN membershipPlan p ON ms.planID = p.id
             WHERE ms.id = ?
         """;
         try(PreparedStatement statement = connection.prepareStatement(sql)){
-            statement.setString(1,id);
-            try(ResultSet result  = statement.executeQuery()){
+            try {
+                statement.setInt(1, Integer.parseInt(id.trim()));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+
+            try(ResultSet result = statement.executeQuery()){
                 if(result.next()){
-                    return  mapRowToMembership(result);
+                    return mapRowToMembership(result);
                 }
             }
         }catch (SQLException e){
-            System.out.println("Error find membership By ID."+e.getMessage());
+            System.out.println("Error finding membership By ID: " + e.getMessage());
             e.printStackTrace();
         }
         return null;
     }
 
     /**
-     * alternative way to search for membership by using memebr id.
-     * @param memberID
+     * Alternative way to search for membership by using member id.
+     * @param memberID ID of member
      * @return membership if found
      */
     public Membership findMemberByID(String memberID){
+        if (memberID == null || memberID.isBlank()) return null;
         String sql = """
             SELECT 
-                ms.id AS ms_id, ms.start_date, ms.end_date, ms.status AS ms_status,
-                m.id AS m_id, m.full_name, m.gender, m.phone_number, m.dob, m.status AS m_status,
-                p.id AS p_id, p.price, p.duration
+                ms.id AS ms_id, ms.startDate, ms.endDate, ms.status AS ms_status,
+                m.id AS m_id, m.fullName, m.gender, m.phoneNumber, m.dob, m.status AS m_status,
+                p.id AS p_id, p.planPrice, p.duration
             FROM memberships ms 
-            JOIN members m ON ms.member_id = m.id 
-            JOIN membership_plans p ON ms.plan_id = p.id
+            JOIN member m ON ms.memberID = m.id 
+            JOIN membershipPlan p ON ms.planID = p.id
             WHERE m.id = ?
         """;
         try(PreparedStatement statement = connection.prepareStatement(sql)){
-            statement.setString(1,memberID);
+            try {
+                statement.setInt(1, Integer.parseInt(memberID.trim()));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+
             try(ResultSet result = statement.executeQuery()){
                 if(result.next()){
-                return mapRowToMembership(result);
+                    return mapRowToMembership(result);
                 }
             }
         }catch (SQLException e ){
-            System.out.println("Error Find membership By Member id. "+e.getMessage());
+            System.out.println("Error Finding membership By Member ID: " + e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }
+
     /**
      * Helper method to map a single database row to a Membership object.
      *
@@ -207,10 +241,10 @@ public class MembershipRepository {
      */
     private Membership mapRowToMembership(ResultSet rs) throws SQLException {
         // 1. Reconstruct Member
-        String mId = rs.getString("m_id");
-        String fullName = rs.getString("full_name");
+        String mId = String.valueOf(rs.getInt("m_id"));
+        String fullName = rs.getString("fullName");
         String genderStr = rs.getString("gender");
-        String mPhone = rs.getString("phone_number");
+        String mPhone = rs.getString("phoneNumber");
         Date mDob = rs.getDate("dob");
         String mStatusStr = rs.getString("m_status");
 
@@ -220,21 +254,20 @@ public class MembershipRepository {
         Member member = new Member(mId, fullName, gender, mPhone, mDob, memberStatus);
 
         // 2. Reconstruct MembershipPlan
-        String pId = rs.getString("p_id");
-        double pPrice = rs.getDouble("price");
+        String pId = String.valueOf(rs.getInt("p_id"));
+        double pPrice = rs.getDouble("planPrice");
         int pDuration = rs.getInt("duration");
 
         MembershipPlan plan = new MembershipPlan(pId, pPrice, pDuration);
 
         // 3. Reconstruct Membership
-        String msId = rs.getString("ms_id");
-        Date startDate = rs.getDate("start_date");
-        Date endDate = rs.getDate("end_date");
+        String msId = String.valueOf(rs.getInt("ms_id"));
+        Date startDate = rs.getDate("startDate");
+        Date endDate = rs.getDate("endDate");
         String msStatusStr = rs.getString("ms_status");
 
         MembershipStatus membershipStatus = msStatusStr != null ? MembershipStatus.valueOf(msStatusStr.toUpperCase()) : MembershipStatus.PENDING;
 
         return new Membership(msId, member, plan, startDate, endDate, membershipStatus);
     }
-
 }
