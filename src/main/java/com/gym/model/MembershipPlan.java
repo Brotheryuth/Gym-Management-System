@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public class MembershipPlan {
     private final String planID;
+    private String planName;
     private double planPrice;
     private int duration;
 
@@ -19,6 +20,7 @@ public class MembershipPlan {
      */
     public MembershipPlan(double planPrice, int duration) {
         this.planID = UUID.randomUUID().toString();
+        this.planName = duration + " Month Plan";
         setPlanPrice(planPrice);
         setDuration(duration);
     }
@@ -32,12 +34,44 @@ public class MembershipPlan {
      */
     public MembershipPlan(String planID, double planPrice, int duration) {
         this.planID = planID;
+        this.planName = duration + " Month Plan";
+        setPlanPrice(planPrice);
+        setDuration(duration);
+    }
+
+    /**
+     * Constructor with explicit planName (auto-generated ID).
+     */
+    public MembershipPlan(String planName, double planPrice, int duration) {
+        this.planID = UUID.randomUUID().toString();
+        setPlanName(planName);
+        setPlanPrice(planPrice);
+        setDuration(duration);
+    }
+
+    /**
+     * Constructor with explicit planName and planID.
+     */
+    public MembershipPlan(String planID, String planName, double planPrice, int duration) {
+        this.planID = planID;
+        setPlanName(planName);
         setPlanPrice(planPrice);
         setDuration(duration);
     }
 
     public String getPlanID() {
         return planID;
+    }
+
+    public String getPlanName() {
+        return planName;
+    }
+
+    public void setPlanName(String planName) {
+        if (planName == null || planName.isBlank()) {
+            throw new IllegalArgumentException("Plan name cannot be null or empty.");
+        }
+        this.planName = planName;
     }
 
     public double getPlanPrice() {
@@ -70,11 +104,13 @@ public class MembershipPlan {
                         MEMBERSHIP PLAN
                 ----------------------------------
                 ID              : %s
+                Name            : %s
                 Price           : $%.2f
                 Duration        : %d month(s)
                 ----------------------------------
                 """,
                 this.planID,
+                this.planName,
                 this.planPrice,
                 this.duration
         );

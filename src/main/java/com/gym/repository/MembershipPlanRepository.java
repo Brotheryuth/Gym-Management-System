@@ -35,7 +35,7 @@ public class MembershipPlanRepository {
         String sql = "INSERT INTO membershipPlan (planName, duration, planPrice) VALUES (?, ?, ?)";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, plan.getDuration() + " Month Plan");
+            stmt.setString(1, plan.getPlanName());
             stmt.setInt(2, plan.getDuration());
             stmt.setDouble(3, plan.getPlanPrice());
 
@@ -70,7 +70,7 @@ public class MembershipPlanRepository {
         String sql = "UPDATE membershipPlan SET planName = ?, duration = ?, planPrice = ? WHERE id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, plan.getDuration() + " Month Plan");
+            stmt.setString(1, plan.getPlanName());
             stmt.setInt(2, plan.getDuration());
             stmt.setDouble(3, plan.getPlanPrice());
             stmt.setInt(4, Integer.parseInt(plan.getPlanID()));
@@ -106,6 +106,7 @@ public class MembershipPlanRepository {
                 if (rs.next()) {
                     return new MembershipPlan(
                             String.valueOf(rs.getInt("id")),
+                            rs.getString("planName"),
                             rs.getDouble("planPrice"),
                             rs.getInt("duration")
                     );
@@ -133,6 +134,7 @@ public class MembershipPlanRepository {
             while (rs.next()) {
                 plans.add(new MembershipPlan(
                         String.valueOf(rs.getInt("id")),
+                        rs.getString("planName"),
                         rs.getDouble("planPrice"),
                         rs.getInt("duration")
                 ));

@@ -9,7 +9,7 @@ import java.sql.Date;
 import java.util.List;
 
 public class MemberService {
-    private MemberRepository memberRepository; // inject memberRepo to service so we can use their method
+    private final MemberRepository memberRepository; // inject memberRepo to service so we can use their method
 
     public MemberService(MemberRepository memberRepository){
         this.memberRepository = memberRepository;
@@ -57,7 +57,7 @@ public class MemberService {
 
     /**
      * Member type
-     * @param ID
+     * @param ID get ID and compare to existing value
      * @return null if not found
      */
     public Member findByID (String ID){
@@ -81,7 +81,11 @@ public class MemberService {
         return memberRepository.findAll();
     }
 
-
+    /**
+     *
+     * @param id
+     * @return
+     */
     public boolean deleteMember(String id) {
         if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("Member ID cannot be null or blank.");
@@ -95,7 +99,7 @@ public class MemberService {
     }
 
     /**
-     * a update method that use to update existing data
+     * an update method that use to update existing data
      * @param id (use to search)
      * @param updateData
      * @return member or null

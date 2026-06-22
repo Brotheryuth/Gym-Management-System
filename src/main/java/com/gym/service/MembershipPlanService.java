@@ -34,6 +34,22 @@ public class MembershipPlanService {
         return success ? plan : null;
     }
 
+
+    /**
+     *
+     * @param membershipPlan accept object as argument
+     * @return null if not found
+     */
+    public MembershipPlan createPlan(MembershipPlan membershipPlan){
+        if(membershipPlan.getPlanPrice() <0.0) throw new IllegalArgumentException("Price cannot be negative");
+        if(getPlanByDuration(membershipPlan.getDuration()) !=null){
+            throw new IllegalArgumentException("A plan with a duration of "+membershipPlan.getDuration()+" month(s) already exist ");
+        }
+        MembershipPlan plan = new MembershipPlan(membershipPlan.getPlanPrice(),membershipPlan.getDuration());
+        boolean success = planRepository.insert(plan);
+        return success? plan : null;
+    }
+
     /**
      * Finds a plan by duration.
      *
@@ -48,6 +64,8 @@ public class MembershipPlanService {
         }
         return null;
     }
+
+
 
     public List<MembershipPlan> findAll() {
         return planRepository.findAll();

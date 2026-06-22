@@ -16,7 +16,7 @@ public class MemberRoute implements EndpointGroup {
         post(memberController::registerMember); //POST api/members
 
         get("phone/{phoneNumber}",memberController::getByPhoneNumber); // api/member/phone/0987654321
-        path("id",()->{
+        path("{id}",()->{
             get(memberController::getByID);
             put(memberController::updateMember);
             delete(memberController::deleteMember);
