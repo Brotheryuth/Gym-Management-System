@@ -146,7 +146,7 @@ public class MembershipRepository {
             SELECT 
                 ms.id AS ms_id, ms.startDate, ms.endDate, ms.status AS ms_status,
                 m.id AS m_id, m.fullName, m.gender, m.phoneNumber, m.dob, m.status AS m_status,
-                p.id AS p_id, p.planPrice, p.duration
+                p.id AS p_id, p.planName AS p_name, p.planPrice, p.duration
             FROM memberships ms 
             JOIN member m ON ms.memberID = m.id 
             JOIN membershipPlan p ON ms.planID = p.id
@@ -171,7 +171,7 @@ public class MembershipRepository {
             SELECT 
                 ms.id AS ms_id, ms.startDate, ms.endDate, ms.status AS ms_status,
                 m.id AS m_id, m.fullName, m.gender, m.phoneNumber, m.dob, m.status AS m_status,
-                p.id AS p_id, p.planPrice, p.duration
+                p.id AS p_id, p.planName AS p_name, p.planPrice, p.duration
             FROM memberships ms 
             JOIN member m ON ms.memberID = m.id 
             JOIN membershipPlan p ON ms.planID = p.id
@@ -207,7 +207,7 @@ public class MembershipRepository {
             SELECT 
                 ms.id AS ms_id, ms.startDate, ms.endDate, ms.status AS ms_status,
                 m.id AS m_id, m.fullName, m.gender, m.phoneNumber, m.dob, m.status AS m_status,
-                p.id AS p_id, p.planPrice, p.duration
+                p.id AS p_id, p.planName AS p_name, p.planPrice, p.duration
             FROM memberships ms 
             JOIN member m ON ms.memberID = m.id 
             JOIN membershipPlan p ON ms.planID = p.id
@@ -255,10 +255,11 @@ public class MembershipRepository {
 
         // 2. Reconstruct MembershipPlan
         String pId = String.valueOf(rs.getInt("p_id"));
+        String pName = rs.getString("p_name");
         double pPrice = rs.getDouble("planPrice");
         int pDuration = rs.getInt("duration");
 
-        MembershipPlan plan = new MembershipPlan(pId, pPrice, pDuration);
+        MembershipPlan plan = new MembershipPlan(pId, pName, pPrice, pDuration);
 
         // 3. Reconstruct Membership
         String msId = String.valueOf(rs.getInt("ms_id"));

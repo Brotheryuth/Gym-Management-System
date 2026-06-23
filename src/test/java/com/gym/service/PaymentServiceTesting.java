@@ -47,7 +47,7 @@ public class PaymentServiceTesting {
         Date endDate = Date.valueOf(LocalDate.now().plusMonths(3));
 
         member = new Member("1", "Alice Smith", Gender.FEMALE, "123456789", dob, MemberStatus.INACTIVE);
-        plan = new MembershipPlan("PLAN-100", 50.0, 3);
+        plan = new MembershipPlan("PLAN-100", "3 Month Plan", 50.0, 3);
         membership = new Membership("MS-100", member, plan, startDate, endDate, MembershipStatus.PENDING);
         
         pendingPayment = new Payment(

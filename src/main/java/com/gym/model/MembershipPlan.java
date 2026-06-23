@@ -9,38 +9,11 @@ public class MembershipPlan {
     private int duration;
 
     public MembershipPlan() {
-        this.planID = java.util.UUID.randomUUID().toString();
+        this.planID = UUID.randomUUID().toString();
     }
 
     /**
      * Constructor to create a new membership plan (ID is auto-generated).
-     *
-     * @param planPrice The price of the plan
-     * @param duration The duration of the plan in months
-     */
-    public MembershipPlan(double planPrice, int duration) {
-        this.planID = UUID.randomUUID().toString();
-        this.planName = duration + " Month Plan";
-        setPlanPrice(planPrice);
-        setDuration(duration);
-    }
-
-    /**
-     * Constructor to load an existing membership plan from database.
-     *
-     * @param planID The existing plan ID
-     * @param planPrice The price of the plan
-     * @param duration The duration of the plan in months
-     */
-    public MembershipPlan(String planID, double planPrice, int duration) {
-        this.planID = planID;
-        this.planName = duration + " Month Plan";
-        setPlanPrice(planPrice);
-        setDuration(duration);
-    }
-
-    /**
-     * Constructor with explicit planName (auto-generated ID).
      */
     public MembershipPlan(String planName, double planPrice, int duration) {
         this.planID = UUID.randomUUID().toString();

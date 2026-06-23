@@ -47,6 +47,7 @@ public class PaymentRepository {
         // 2. Reconstruct MembershipPlan
         MembershipPlan plan = new MembershipPlan(
                 String.valueOf(rs.getInt("plan_id")),
+                rs.getString("plan_name"),
                 rs.getDouble("planPrice"),
                 rs.getInt("duration")
         );
@@ -152,7 +153,7 @@ public class PaymentRepository {
                 p.id AS p_id, p.baseAmount, p.finalAmount, p.discount, p.method, p.status AS p_status, p.createAt, p.paymentDate,
                 ms.id AS ms_id, ms.startDate, ms.endDate, ms.status AS ms_status,
                 m.id AS m_id, m.fullName, m.gender, m.phoneNumber, m.dob, m.status AS m_status,
-                plan.id AS plan_id, plan.planPrice, plan.duration
+                plan.id AS plan_id, plan.planName AS plan_name, plan.planPrice, plan.duration
             FROM payment p
             JOIN memberships ms ON p.membershipID = ms.id
             JOIN member m ON ms.memberID = m.id
@@ -189,7 +190,7 @@ public class PaymentRepository {
                 p.id AS p_id, p.baseAmount, p.finalAmount, p.discount, p.method, p.status AS p_status, p.createAt, p.paymentDate,
                 ms.id AS ms_id, ms.startDate, ms.endDate, ms.status AS ms_status,
                 m.id AS m_id, m.fullName, m.gender, m.phoneNumber, m.dob, m.status AS m_status,
-                plan.id AS plan_id, plan.planPrice, plan.duration
+                plan.id AS plan_id, plan.planName AS plan_name, plan.planPrice, plan.duration
             FROM payment p
             JOIN memberships ms ON p.membershipID = ms.id
             JOIN member m ON ms.memberID = m.id

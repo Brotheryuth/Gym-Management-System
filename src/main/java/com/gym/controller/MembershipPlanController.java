@@ -81,7 +81,7 @@ public class MembershipPlanController {
         String id = ctx.pathParam("id");
         MembershipPlan reqBody = ctx.bodyAsClass(MembershipPlan.class);
         if(reqBody ==null) throw new IllegalStateException("Cannot Update plan");
-        MembershipPlan updatePlan = membershipPlanService.updatePlan(id , reqBody.getPlanPrice(),reqBody.getDuration());
+        MembershipPlan updatePlan = membershipPlanService.updatePlan(id , reqBody.getPlanName(), reqBody.getPlanPrice(), reqBody.getDuration());
         if(updatePlan ==null) throw  new IllegalStateException("Cannot update plan");
         ctx.status(HttpStatus.OK).json(updatePlan);
         }catch (IllegalArgumentException e ){
@@ -93,8 +93,6 @@ public class MembershipPlanController {
             ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result(e.getMessage());
         }
     }
-
-
 
     public void getAll(Context ctx ){
         try{

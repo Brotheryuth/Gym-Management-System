@@ -1,6 +1,7 @@
 package com.gym.model;
 
 import com.gym.enums.MembershipStatus;
+import com.gym.enums.PaymentMethod;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ public class Membership {
     private Date startDate;
     private Date endDate;
     private MembershipStatus status;
+    private Payment payment;
 
     private static final DateTimeFormatter cleanDate = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
 
@@ -47,6 +49,17 @@ public class Membership {
         setPlan(plan);
         setStartDate(startDate);
         setStatus(MembershipStatus.PENDING);
+    }
+
+    /**
+     * Create membership with only member and plan
+     * @param member a specific member
+     * @param plan subscribe plan
+     */
+    public  Membership(Member member , MembershipPlan plan){
+        this.id=UUID.randomUUID().toString();
+        setMember(member);
+        setPlan(plan);
     }
 
 
@@ -135,6 +148,14 @@ public class Membership {
             throw new IllegalArgumentException("Membership status cannot be null.");
         }
         this.status = status;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
     }
 
     @Override

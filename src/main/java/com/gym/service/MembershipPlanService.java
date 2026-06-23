@@ -24,16 +24,15 @@ public class MembershipPlanService {
      * @param duration the duration in months
      * @return the created MembershipPlan
      */
-    public MembershipPlan createPlan(double price, int duration) {
+    public MembershipPlan createPlan(String planName, double price, int duration) {
         if (getPlanByDuration(duration) != null) {
             throw new IllegalArgumentException("A plan with a duration of " + duration + " month(s) already exists.");
         }
 
-        MembershipPlan plan = new MembershipPlan(price, duration);
+        MembershipPlan plan = new MembershipPlan(planName, price, duration);
         boolean success = planRepository.insert(plan);
         return success ? plan : null;
     }
-
 
     /**
      *
@@ -45,7 +44,7 @@ public class MembershipPlanService {
         if(getPlanByDuration(membershipPlan.getDuration()) !=null){
             throw new IllegalArgumentException("A plan with a duration of "+membershipPlan.getDuration()+" month(s) already exist ");
         }
-        MembershipPlan plan = new MembershipPlan(membershipPlan.getPlanPrice(),membershipPlan.getDuration());
+        MembershipPlan plan = new MembershipPlan(membershipPlan.getPlanName(), membershipPlan.getPlanPrice(), membershipPlan.getDuration());
         boolean success = planRepository.insert(plan);
         return success? plan : null;
     }
@@ -88,7 +87,9 @@ public class MembershipPlanService {
      * @param newDuration the new duration in months
      * @return the updated MembershipPlan or null
      */
-    public MembershipPlan updatePlan(String id, double newPrice, int newDuration) {
+
+
+    public MembershipPlan updatePlan(String id, String newName, double newPrice, int newDuration) {
         MembershipPlan plan = findById(id);
         if (plan == null) {
             throw new IllegalArgumentException("Plan with ID " + id + " does not exist.");
@@ -115,6 +116,7 @@ public class MembershipPlanService {
             }
         }
 
+        plan.setPlanName(newName);
         plan.setPlanPrice(newPrice);
         plan.setDuration(newDuration);
 

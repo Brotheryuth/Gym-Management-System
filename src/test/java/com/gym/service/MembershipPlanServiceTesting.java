@@ -37,8 +37,8 @@ public class MembershipPlanServiceTesting {
 
     @BeforeEach
     public void setUp() {
-        plan3Months = new MembershipPlan("PLAN-100", 50.0, 3);
-        plan6Months = new MembershipPlan("PLAN-200", 90.0, 6);
+        plan3Months = new MembershipPlan("PLAN-100", "3 Month Plan", 50.0, 3);
+        plan6Months = new MembershipPlan("PLAN-200", "6 Month Plan", 90.0, 6);
     }
 
     @Test
@@ -48,7 +48,7 @@ public class MembershipPlanServiceTesting {
         when(planRepository.insert(any(MembershipPlan.class))).thenReturn(true);
 
         // Act
-        MembershipPlan result = planService.createPlan(50.0, 3);
+        MembershipPlan result = planService.createPlan("3 Month Plan", 50.0, 3);
 
         // Assert
         assertNotNull(result);
@@ -64,7 +64,7 @@ public class MembershipPlanServiceTesting {
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> {
-            planService.createPlan(60.0, 3);
+            planService.createPlan("3 Month Plan", 60.0, 3);
         });
 
         verify(planRepository, never()).insert(any());
@@ -111,7 +111,7 @@ public class MembershipPlanServiceTesting {
         when(planRepository.update(plan3Months)).thenReturn(true);
 
         // Act
-        MembershipPlan updated = planService.updatePlan("PLAN-100", 55.0, 3);
+        MembershipPlan updated = planService.updatePlan("PLAN-100", "3 Month Plan", 55.0, 3);
 
         // Assert
         assertNotNull(updated);
@@ -132,7 +132,7 @@ public class MembershipPlanServiceTesting {
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> {
-            planService.updatePlan("PLAN-100", 50.0, 6);
+            planService.updatePlan("PLAN-100", "6 Month Plan", 50.0, 6);
         });
 
         verify(planRepository, never()).update(any());
