@@ -1,7 +1,9 @@
 package com.gym;
 
+import com.gym.controller.AuthController;
 import com.gym.controller.MemberController;
 import com.gym.controller.MembershipPlanController;
+import com.gym.controller.StaffController;
 import io.javalin.Javalin;
 import com.gym.route.*;
 import io.javalin.plugin.bundled.CorsPluginConfig;
@@ -14,7 +16,12 @@ public class App {
 
 
 
-    public  App(MemberController memberController , MembershipPlanController membershipPlanController){
+    public  App(MemberController memberController, 
+               MembershipPlanController membershipPlanController,
+               MembershipController membershipController,
+               PaymentController paymentController,
+               StaffController staffController,
+               AuthController authController){
         //config cors
         this.app = Javalin.create(config->{
             config.bundledPlugins.enableCors(cors->{
@@ -24,7 +31,11 @@ public class App {
             config.router.apiBuilder(()->{
                 get("/", ctx -> ctx.result("Welcome to the Gym Management System API!"));
                 path("api/members", new MemberRoute(memberController));
-                path("api/plans",new MembershipPlanRoute(membershipPlanController));
+                path("api/plans", new MembershipPlanRoute(membershipPlanController));
+                path("api/memberships", new MembershipRoute(membershipController));
+                path("api/payments", new PaymentRoute(paymentController));
+                path("api/staff", new StaffRoute(staffController));
+                path("api/auth", new AuthRoute(authController));
             });
         });
     }

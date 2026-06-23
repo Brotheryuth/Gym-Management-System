@@ -59,7 +59,7 @@ public class StaffService {
             }
         }
 
-        throw new IllegalArgumentException("Invalid name/phone number or password.");
+        throw new IllegalStateException("Invalid name/phone number or password.");
     }
 
     /**

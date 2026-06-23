@@ -42,19 +42,6 @@ public class MemberService {
         return memberRepository.insert(member);
     }
 
-    public Member createMember(String fullName, Gender gender, Date dob, String phoneNumber){
-        Member newMember = new Member(fullName, gender, phoneNumber, dob, MemberStatus.INACTIVE);
-        registerMember(newMember);
-        return newMember;
-    }
-
-    //cli
-    public Member createMember(String fullName, String phoneNumber){
-        Member newMember = new Member(fullName, Gender.MALE, phoneNumber, null, MemberStatus.INACTIVE);
-        registerMember(newMember);
-        return newMember;
-    }
-
     /**
      * Member type
      * @param ID get ID and compare to existing value

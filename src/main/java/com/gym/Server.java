@@ -1,12 +1,8 @@
 package com.gym;
 
-import com.gym.controller.MemberController;
-import com.gym.controller.MembershipPlanController;
-import com.gym.repository.MemberRepository;
-import com.gym.repository.MembershipPlanRepository;
-import com.gym.repository.MembershipRepository;
-import com.gym.service.MemberService;
-import com.gym.service.MembershipPlanService;
+import com.gym.controller.*;
+import com.gym.repository.*;
+import com.gym.service.*;
 import com.gym.util.DatabaseConnection;
 import com.gym.util.DatabaseInitializer;
 
@@ -33,7 +29,19 @@ public class Server {
             MembershipPlanService planService = new MembershipPlanService(planRepo, membershipRepo);
             MembershipPlanController planController = new MembershipPlanController(planService);
 
-            App app = new App(memberController, planController);
+            PaymentRepository paymentRepo = new PaymentRepository(db);
+            PaymentService paymentService = new PaymentService(paymentRepo, membershipRepo, memRepo);
+            PaymentController paymentController = new PaymentController(paymentService);
+
+            MembershipService membershipService = new MembershipService(membershipRepo, memRepo, paymentRepo, planRepo);
+            MembershipController membershipController = new MembershipController(membershipService, memberService, planService);
+
+            StaffRepository staffRepo = new StaffRepository(db);
+            StaffService staffService = new StaffService(staffRepo);
+            StaffController staffController = new StaffController(staffService);
+            AuthController authController = new AuthController(staffService);
+
+            App app = new App(memberController, planController, membershipController, paymentController, staffController, authController);
 
             app.start(7070);
 

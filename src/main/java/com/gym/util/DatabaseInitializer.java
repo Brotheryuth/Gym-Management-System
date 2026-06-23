@@ -115,6 +115,18 @@ public class DatabaseInitializer {
                 """;
             stmt.executeUpdate(createStaffTable);
 
+            // Seed default admin if staff table is empty
+            try (var rs = stmt.executeQuery("SELECT COUNT(*) FROM staff")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    System.out.println("Seeding default admin staff...");
+                    String seedAdmin = """
+                        INSERT INTO staff (name, gender, dob, salary, phoneNumber, password, role, shift, hireDate)
+                        VALUES ('admin', 'MALE', '1990-01-01', 0.0, '012345678', 'admin123', 'ADMIN', 'FULLTIME', CURRENT_DATE)
+                        """;
+                    stmt.executeUpdate(seedAdmin);
+                }
+            }
+
             System.out.println("Database tables initialized successfully.");
         } catch (SQLException e) {
             System.out.println("Error initializing database tables: " + e.getMessage());
