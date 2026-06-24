@@ -1,9 +1,6 @@
 package com.gym;
 
-import com.gym.controller.AuthController;
-import com.gym.controller.MemberController;
-import com.gym.controller.MembershipPlanController;
-import com.gym.controller.StaffController;
+import com.gym.controller.*;
 import io.javalin.Javalin;
 import com.gym.route.*;
 import io.javalin.plugin.bundled.CorsPluginConfig;
