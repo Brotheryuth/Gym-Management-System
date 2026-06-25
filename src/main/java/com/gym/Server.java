@@ -33,7 +33,7 @@ public class Server {
             PaymentService paymentService = new PaymentService(paymentRepo, membershipRepo, memRepo);
             PaymentController paymentController = new PaymentController(paymentService);
 
-            MembershipService membershipService = new MembershipService(membershipRepo, memRepo, paymentRepo, planRepo);
+            MembershipService membershipService = new MembershipService(membershipRepo, memRepo, paymentRepo);
             MembershipController membershipController = new MembershipController(membershipService, memberService, planService);
 
             StaffRepository staffRepo = new StaffRepository(db);

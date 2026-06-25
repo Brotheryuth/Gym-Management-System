@@ -1,4 +1,4 @@
-package com.gym.repository;
+package com.gym.interfaces;
 
 import java.util.List;
 

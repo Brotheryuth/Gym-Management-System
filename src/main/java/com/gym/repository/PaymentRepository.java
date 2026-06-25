@@ -1,5 +1,6 @@
 package com.gym.repository;
 
+import com.gym.interfaces.Repository;
 import com.gym.model.*;
 import com.gym.enums.*;
 

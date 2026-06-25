@@ -8,7 +8,6 @@ import com.gym.model.Membership;
 import com.gym.model.MembershipPlan;
 import com.gym.model.Payment;
 import com.gym.repository.MemberRepository;
-import com.gym.repository.MembershipPlanRepository;
 import com.gym.repository.MembershipRepository;
 import com.gym.repository.PaymentRepository;
 
@@ -19,16 +18,13 @@ public class MembershipService {
     private final MembershipRepository membershipRepository;
     private final MemberRepository memberRepository;
     private final PaymentRepository paymentRepository;
-    private final MembershipPlanRepository membershipPlanRepository;
 
     public MembershipService(MembershipRepository membershipRepository, 
                              MemberRepository memberRepository, 
-                             PaymentRepository paymentRepository,
-                             MembershipPlanRepository membershipPlanRepository) {
+                             PaymentRepository paymentRepository) {
         this.membershipRepository = membershipRepository;
         this.memberRepository = memberRepository;
         this.paymentRepository = paymentRepository;
-        this.membershipPlanRepository = membershipPlanRepository;
     }
 
     /**

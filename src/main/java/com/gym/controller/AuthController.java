@@ -1,6 +1,5 @@
 package com.gym.controller;
 
-import com.gym.enums.StaffRole;
 import com.gym.model.Staff;
 import com.gym.service.StaffService;
 import io.javalin.http.Context;

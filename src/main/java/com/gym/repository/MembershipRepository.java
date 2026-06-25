@@ -1,5 +1,6 @@
 package com.gym.repository;
 
+import com.gym.interfaces.Repository;
 import com.gym.enums.Gender;
 import com.gym.enums.MemberStatus;
 import com.gym.enums.MembershipStatus;
