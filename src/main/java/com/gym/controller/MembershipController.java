@@ -30,7 +30,7 @@ public class MembershipController {
      * Find membership by its ID
      * @param ctx Context
      */
-    public void findByID(Context ctx) {
+    public void findById(Context ctx) {
         String id = ctx.pathParam("id");
         try {
             Membership membership = membershipService.findById(id);
@@ -73,7 +73,7 @@ public class MembershipController {
             }
             
             // Resolve member
-            Member member = memberService.findByID(req.memberID);
+            Member member = memberService.findById(req.memberID);
             if (member == null) {
                 throw new IllegalArgumentException("Member not found with ID: " + req.memberID);
             }

@@ -3,6 +3,7 @@ package com.gym.route;
 import com.gym.controller.MemberController;
 import io.javalin.apibuilder.EndpointGroup;
 import static io.javalin.apibuilder.ApiBuilder.*;
+
 public class MemberRoute implements EndpointGroup {
     private  final MemberController memberController;
 
@@ -15,9 +16,9 @@ public class MemberRoute implements EndpointGroup {
         get(memberController::getAll); //GET api/members
         post(memberController::registerMember); //POST api/members
 
-        get("phone/{phoneNumber}",memberController::getByPhoneNumber); // api/member/phone/0987654321
+        get("phone/{phoneNumber}", memberController::getByPhoneNumber); // api/member/phone/0987654321
         path("{id}",()->{
-            get(memberController::getByID);
+            get(memberController::findById);
             put(memberController::updateMember);
             delete(memberController::deleteMember);
         });

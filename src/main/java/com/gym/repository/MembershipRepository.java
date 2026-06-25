@@ -11,7 +11,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MembershipRepository {
+public class MembershipRepository implements Repository<Membership, String> {
     private Connection connection;
 
     public MembershipRepository(Connection connection){
@@ -34,6 +34,7 @@ public class MembershipRepository {
      * @param membership The membership object to insert
      * @return true if insert was successful, false otherwise
      */
+    @Override
     public boolean insert(Membership membership) {
         if (membership == null || membership.getMember() == null || membership.getPlan() == null) {
             System.out.println("Cannot insert membership: missing member or plan details.");
@@ -74,6 +75,7 @@ public class MembershipRepository {
      * @param membership The membership with updated values
      * @return true if update was successful, false otherwise
      */
+    @Override
     public boolean update(Membership membership) {
         if (membership == null || membership.getMember() == null || membership.getPlan() == null) {
             System.out.println("Cannot update membership: missing member or plan details.");
@@ -106,6 +108,7 @@ public class MembershipRepository {
      * @param id The ID of the membership to delete
      * @return true if deleted successfully, false otherwise
      */
+    @Override
     public boolean delete(String id) {
         if (id == null || id.isBlank()) return false;
         String sql = "DELETE FROM memberships WHERE id = ?";
@@ -140,6 +143,7 @@ public class MembershipRepository {
         return delete(membership.getId());
     }
 
+    @Override
     public List<Membership> findAll() {
         List<Membership> memberships = new ArrayList<>();
         String sql = """
@@ -165,7 +169,8 @@ public class MembershipRepository {
         return memberships;
     }
 
-    public Membership findByID(String id){
+    @Override
+    public Membership findById(String id){
         if (id == null || id.isBlank()) return null;
         String sql = """
             SELECT 

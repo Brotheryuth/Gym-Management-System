@@ -8,12 +8,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PaymentRepository {
+public class PaymentRepository implements Repository<Payment, String> {
     private final Connection connection;
 
     public PaymentRepository(Connection connection) {
@@ -81,6 +80,7 @@ public class PaymentRepository {
     /**
      * Inserts a new payment record into the database.
      */
+    @Override
     public boolean insert(Payment payment) {
         if (payment == null || payment.getMembership() == null) {
             System.out.println("Cannot insert payment: missing membership details.");
@@ -123,6 +123,7 @@ public class PaymentRepository {
     /**
      * Updates an existing payment's status and execution date.
      */
+    @Override
     public boolean update(Payment payment) {
         if (payment == null) return false;
 
@@ -146,6 +147,7 @@ public class PaymentRepository {
     /**
      * Finds a payment by its unique ID.
      */
+    @Override
     public Payment findById(String id) {
         if (id == null || id.isBlank()) return null;
         String sql = """
@@ -183,6 +185,7 @@ public class PaymentRepository {
     /**
      * Retrieves all payments.
      */
+    @Override
     public List<Payment> findAll() {
         List<Payment> payments = new ArrayList<>();
         String sql = """
@@ -213,6 +216,7 @@ public class PaymentRepository {
     /**
      * Deletes a payment by ID.
      */
+    @Override
     public boolean delete(String id) {
         if (id == null || id.isBlank()) return false;
         String sql = "DELETE FROM payment WHERE id = ?";

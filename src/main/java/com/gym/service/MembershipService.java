@@ -81,7 +81,7 @@ public class MembershipService {
      * @return true if successfully cancelled
      */
     public boolean cancelMembership(String membershipId) {
-        Membership membership = membershipRepository.findByID(membershipId);
+        Membership membership = membershipRepository.findById(membershipId);
         if (membership == null) {
             throw new IllegalArgumentException("Membership record not found.");
         }
@@ -141,11 +141,10 @@ public class MembershipService {
         if (id == null || id.isBlank()) {
             return null;
         }
-        return membershipRepository.findByID(id.trim());
+        return membershipRepository.findById(id.trim());
     }
 
     public List<Membership> findAll() {
         return membershipRepository.findAll();
     }
-
 }

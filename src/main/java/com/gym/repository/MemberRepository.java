@@ -8,10 +8,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A repo class that perform CRUD operation for Member
- */
-public class MemberRepository {
+public class MemberRepository implements Repository<Member, String> {
     private Connection connection;
 
     public MemberRepository(Connection getConnection){
@@ -33,12 +30,13 @@ public class MemberRepository {
      * @param member the member to insert
      * @return true if insert successful
      */
+    @Override
     public boolean insert (Member member){
         if (member == null) return false;
         String script = "INSERT INTO member (fullName, gender, phoneNumber, dob, status) VALUES (?,?,?,?,?)";
         try(PreparedStatement statement = connection.prepareStatement(script, Statement.RETURN_GENERATED_KEYS)){
             statement.setString(1, member.getFullName());
-            statement.setString(2 , member.getGender() != null ? member.getGender().name() : null);
+            statement.setString(2, member.getGender() != null ? member.getGender().name() : null);
             statement.setString(3, member.getPhoneNumber());
             statement.setDate(4, member.getDob());
             statement.setString(5, member.getMemberStatus() != null ? member.getMemberStatus().name() : null);
@@ -61,16 +59,44 @@ public class MemberRepository {
     }
 
     /**
-     * Find member by ID
-     * @param id to search for that id
+     * Update existing member values
+     * @param member target member to update
+     * @return true if successful
+     */
+    @Override
+    public boolean update(Member member){
+        if (member == null) return false;
+        String query = "UPDATE member SET fullName = ?, gender = ?, phoneNumber = ?, dob = ?, status = ? WHERE id = ?";
+        try(PreparedStatement statement = connection.prepareStatement(query)){
+            statement.setString(1, member.getFullName());
+            statement.setString(2, member.getGender() != null ? member.getGender().name() : null);
+            statement.setString(3, member.getPhoneNumber());
+            statement.setDate(4, member.getDob());
+            statement.setString(5, member.getMemberStatus() != null ? member.getMemberStatus().name() : null);
+            statement.setInt(6, Integer.parseInt(member.getId()));
+
+            int rowAffect = statement.executeUpdate();
+            return rowAffect > 0;
+
+        }catch (SQLException | NumberFormatException e ){
+            System.out.println("Error updating member: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Find member by ID (standardized method name matching the Repository interface)
+     * @param id the unique ID to search for
      * @return Member object or null
      */
-    public Member findByID(String id ){
+    @Override
+    public Member findById(String id ){
         if (id == null || id.isBlank()) return null;
         String queryScript = "SELECT * FROM member WHERE id = ?" ;
         try(PreparedStatement statement = connection.prepareStatement(queryScript)){
             try {
-                statement.setInt(1 , Integer.parseInt(id.trim()));
+                statement.setInt(1, Integer.parseInt(id.trim()));
             } catch (NumberFormatException e) {
                 return null;
             }
@@ -129,6 +155,7 @@ public class MemberRepository {
      * Query to get all members
      * @return list of members
      */
+    @Override
     public List<Member> findAll(){
         String query = "SELECT * FROM member";
         List<Member> members = new ArrayList<>();
@@ -155,46 +182,11 @@ public class MemberRepository {
     }
 
     /**
-     * Update existing member values
-     * @param member target member to update
-     * @return true if successful
-     */
-    public boolean update(Member member){
-        if (member == null) return false;
-        String query = "UPDATE member SET fullName = ?, gender = ?, phoneNumber = ?, dob = ?, status = ? WHERE id = ?";
-        try(PreparedStatement statement = connection.prepareStatement(query)){
-            statement.setString(1, member.getFullName());
-            statement.setString(2, member.getGender() != null ? member.getGender().name() : null);
-            statement.setString(3, member.getPhoneNumber());
-            statement.setDate(4, member.getDob());
-            statement.setString(5, member.getMemberStatus() != null ? member.getMemberStatus().name() : null);
-            statement.setInt(6, Integer.parseInt(member.getId()));
-
-            int rowAffect = statement.executeUpdate();
-            return rowAffect > 0;
-
-        }catch (SQLException | NumberFormatException e ){
-            System.out.println("Error updating member: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * Delete member
-     * @param member the target member
-     * @return true if successful
-     */
-    public boolean delete(Member member){
-        if (member == null) return false;
-        return delete(member.getId());
-    }
-
-    /**
-     * Delete member by ID
+     * Delete member by ID (implementing Repository delete method)
      * @param id the target member ID
      * @return true if successful
      */
+    @Override
     public boolean delete(String id){
         if (id == null || id.isBlank()) return false;
         String query = "DELETE FROM member WHERE id = ?";
@@ -210,5 +202,13 @@ public class MemberRepository {
             System.out.println("Error deleting member: " + e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Helper delete method for Member object
+     */
+    public boolean delete(Member member){
+        if (member == null) return false;
+        return delete(member.getId());
     }
 }

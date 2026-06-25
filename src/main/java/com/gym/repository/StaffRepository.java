@@ -14,7 +14,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StaffRepository {
+public class StaffRepository implements Repository<Staff, String> {
     private final Connection connection;
 
     public StaffRepository(Connection connection) {
@@ -37,6 +37,7 @@ public class StaffRepository {
      * @param staff The staff object to save
      * @return true if successful, false otherwise
      */
+    @Override
     public boolean insert(Staff staff) {
         if (staff == null) return false;
 
@@ -81,6 +82,7 @@ public class StaffRepository {
      * @param staff The staff object with updated values
      * @return true if successful, false otherwise
      */
+    @Override
     public boolean update(Staff staff) {
         if (staff == null) return false;
 
@@ -118,6 +120,7 @@ public class StaffRepository {
      * @param id The staff ID
      * @return The Staff object if found, or null
      */
+    @Override
     public Staff findById(String id) {
         if (id == null || id.isBlank()) return null;
         String sql = "SELECT * FROM staff WHERE id = ?";
@@ -161,6 +164,7 @@ public class StaffRepository {
      *
      * @return A list of all staff
      */
+    @Override
     public List<Staff> findAll() {
         List<Staff> staffList = new ArrayList<>();
         String sql = "SELECT * FROM staff";
@@ -199,6 +203,7 @@ public class StaffRepository {
      * @param id The ID of the staff member to delete
      * @return true if successful, false otherwise
      */
+    @Override
     public boolean delete(String id) {
         if (id == null || id.isBlank()) return false;
         String sql = "DELETE FROM staff WHERE id = ?";

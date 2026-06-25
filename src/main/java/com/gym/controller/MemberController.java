@@ -11,21 +11,20 @@ public class MemberController {
     public MemberController(MemberService memberService){
         this.memberService =memberService;
     }
-    //get
+    
     public void getAll(Context ctx){
         ctx.status(HttpStatus.OK).json(memberService.findAll());
     }
-    //get
 
     /**
      * a method to get id from param (/member/1)
      * @param ctx
      * @return Okay is found otherwise NOT_FOUND
      */
-    public void getByID(Context ctx ){
-            String id = ctx.pathParam("id");
+    public void findById(Context ctx ){
+        String id = ctx.pathParam("id");
         try{
-            Member newMember = memberService.findByID(id);
+            Member newMember = memberService.findById(id);
             if(newMember ==null) throw new IllegalStateException("Member is null");
             ctx.status(HttpStatus.OK).json(newMember);
         }catch (IllegalStateException e ){
@@ -95,6 +94,4 @@ public class MemberController {
         ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result(e.getMessage());
     }
 }
-
-
 }

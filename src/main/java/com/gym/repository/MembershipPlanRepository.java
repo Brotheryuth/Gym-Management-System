@@ -6,7 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MembershipPlanRepository {
+public class MembershipPlanRepository implements Repository<MembershipPlan, String> {
     private final Connection connection;
 
     public MembershipPlanRepository(Connection connection) {
@@ -29,6 +29,7 @@ public class MembershipPlanRepository {
      * @param plan The membership plan to save
      * @return true if successful, false otherwise
      */
+    @Override
     public boolean insert(MembershipPlan plan) {
         if (plan == null) return false;
 
@@ -64,6 +65,7 @@ public class MembershipPlanRepository {
      * @param plan The updated membership plan
      * @return true if successful, false otherwise
      */
+    @Override
     public boolean update(MembershipPlan plan) {
         if (plan == null) return false;
 
@@ -91,6 +93,7 @@ public class MembershipPlanRepository {
      * @param id The plan ID
      * @return The MembershipPlan if found, or null
      */
+    @Override
     public MembershipPlan findById(String id) {
         if (id == null || id.isBlank()) return null;
         String sql = "SELECT * FROM membershipPlan WHERE id = ?";
@@ -124,6 +127,7 @@ public class MembershipPlanRepository {
      *
      * @return A list of all plans
      */
+    @Override
     public List<MembershipPlan> findAll() {
         List<MembershipPlan> plans = new ArrayList<>();
         String sql = "SELECT * FROM membershipPlan";
@@ -152,6 +156,7 @@ public class MembershipPlanRepository {
      * @param id The ID of the plan to delete
      * @return true if deleted successfully, false otherwise
      */
+    @Override
     public boolean delete(String id) {
         if (id == null || id.isBlank()) return false;
         String sql = "DELETE FROM membershipPlan WHERE id = ?";

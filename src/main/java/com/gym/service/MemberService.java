@@ -1,11 +1,9 @@
 package com.gym.service;
 
-import com.gym.enums.Gender;
 import com.gym.enums.MemberStatus;
 import com.gym.model.Member;
 import com.gym.repository.MemberRepository;
 
-import java.sql.Date;
 import java.util.List;
 
 public class MemberService {
@@ -27,7 +25,7 @@ public class MemberService {
         }
         
         // validate ID
-        if(member.getId() != null && memberRepository.findByID(member.getId()) != null){
+        if(member.getId() != null && memberRepository.findById(member.getId()) != null){
             throw new IllegalArgumentException("Member with ID " + member.getId() + " is already registered.");
         }
 
@@ -47,11 +45,11 @@ public class MemberService {
      * @param ID get ID and compare to existing value
      * @return null if not found
      */
-    public Member findByID (String ID){
+    public Member findById (String ID){
         if(ID == null || ID.isBlank()){
             return null;
         }
-        return memberRepository.findByID(ID.trim());
+        return memberRepository.findById(ID.trim());
     }
 
     /**
@@ -92,7 +90,7 @@ public class MemberService {
      * @return member or null
      */
     public Member updateMember(String id , Member updateData){
-        Member getMember = findByID(id);
+        Member getMember = findById(id);
         if(getMember == null) throw new IllegalArgumentException("  Member with "+id+"Does not exist");
         // for phone number
         if(updateData.getPhoneNumber()!=null && !updateData.getPhoneNumber().equalsIgnoreCase("N/A")){
@@ -109,7 +107,5 @@ public class MemberService {
         getMember.setPhoneNumber(updateData.getPhoneNumber());
         boolean success = memberRepository.update(getMember);
         return  success? getMember : null;
-
-
     }
 }
