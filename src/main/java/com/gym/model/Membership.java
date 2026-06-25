@@ -3,6 +3,8 @@ package com.gym.model;
 import com.gym.enums.MembershipStatus;
 import com.gym.enums.PaymentMethod;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,6 +17,7 @@ public class Membership {
     private Date startDate;
     private Date endDate;
     private MembershipStatus status;
+    @JsonIgnoreProperties("membership")
     private Payment payment;
 
     private static final DateTimeFormatter cleanDate = DateTimeFormatter.ofPattern("dd-MMM-yyyy");

@@ -3,12 +3,15 @@ package com.gym.model;
 import com.gym.enums.PaymentMethod;
 import com.gym.enums.PaymentStatus;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class Payment {
     private final String id;
+    @JsonIgnoreProperties("payment")
     private Membership membership;
     private double baseAmount;
     private int discount; // discount as integer percentage (e.g., 20 for 20%)

@@ -51,6 +51,16 @@ public class DatabaseInitializer {
                 """;
             stmt.executeUpdate(createMembershipPlanTable);
 
+            // Seed default plans if membershipPlan table is empty
+            try (var rs = stmt.executeQuery("SELECT COUNT(*) FROM membershipPlan")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    System.out.println("Seeding default membership plans...");
+                    stmt.executeUpdate("INSERT INTO membershipPlan (planName, duration, planPrice) VALUES ('Standard 1 Month', 1, 30.00)");
+                    stmt.executeUpdate("INSERT INTO membershipPlan (planName, duration, planPrice) VALUES ('Premium 3 Months', 3, 80.00)");
+                    stmt.executeUpdate("INSERT INTO membershipPlan (planName, duration, planPrice) VALUES ('Elite Year VIP', 12, 280.00)");
+                }
+            }
+
             // 3. Create memberships table
             String createMembershipsTable = """
                 CREATE TABLE IF NOT EXISTS memberships (

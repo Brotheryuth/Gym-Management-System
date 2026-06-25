@@ -15,7 +15,7 @@ public class PaymentRoute implements EndpointGroup {
         get(paymentController::getAll);
         path("{id}",()->{
            get(paymentController::getByID);
-           post(paymentController::processPayment);
+           post("process", paymentController::processPayment);
 
         });
     }

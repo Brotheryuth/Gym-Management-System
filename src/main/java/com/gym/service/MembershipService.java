@@ -69,6 +69,7 @@ public class MembershipService {
         // 3. Create the corresponding Payment record automatically
         Payment payment = new Payment(membership, discount, method);
         paymentRepository.insert(payment);
+        membership.setPayment(payment);
 
         return membership;
     }
