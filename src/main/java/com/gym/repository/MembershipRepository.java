@@ -20,13 +20,7 @@ public class MembershipRepository implements Repository<Membership, String> {
     }
 
     private void setGeneratedId(Membership membership, int generatedId) {
-        try {
-            java.lang.reflect.Field idField = Membership.class.getDeclaredField("id");
-            idField.setAccessible(true);
-            idField.set(membership, String.valueOf(generatedId));
-        } catch (Exception e) {
-            System.out.println("Reflection error updating ID: " + e.getMessage());
-        }
+        membership.setId(String.valueOf(generatedId));
     }
 
     /**

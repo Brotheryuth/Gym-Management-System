@@ -40,6 +40,10 @@ public abstract class Person {
         return id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getFullName() {
         return fullName;
     }

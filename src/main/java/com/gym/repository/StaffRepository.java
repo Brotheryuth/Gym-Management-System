@@ -23,13 +23,7 @@ public class StaffRepository implements Repository<Staff, String> {
     }
 
     private void setGeneratedId(Staff staff, int generatedId) {
-        try {
-            java.lang.reflect.Field idField = Staff.class.getDeclaredField("id");
-            idField.setAccessible(true);
-            idField.set(staff, String.valueOf(generatedId));
-        } catch (Exception e) {
-            System.out.println("Reflection error updating ID: " + e.getMessage());
-        }
+        staff.setId(String.valueOf(generatedId));
     }
 
     /**

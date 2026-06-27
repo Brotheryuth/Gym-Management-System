@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class Membership {
-    private final String id;
+    private String id;
     private MembershipPlan plan;
     private Member member;
     private Date startDate;
@@ -88,6 +88,10 @@ public class Membership {
 
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public MembershipPlan getPlan() {
