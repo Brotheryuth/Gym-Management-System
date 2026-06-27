@@ -91,7 +91,9 @@ public class MainFrame extends JFrame {
         );
         MemberPanel memberPanel = new MemberPanel(
             memberService,
-            paymentService
+            paymentService,
+            membershipPlanService,
+            membershipService
         );
         MembershipPanel membershipPanel = new MembershipPanel(
             membershipService,
