@@ -21,13 +21,7 @@ public class PaymentRepository implements Repository<Payment, String> {
     }
 
     private void setGeneratedId(Payment payment, int generatedId) {
-        try {
-            java.lang.reflect.Field idField = Payment.class.getDeclaredField("id");
-            idField.setAccessible(true);
-            idField.set(payment, String.valueOf(generatedId));
-        } catch (Exception e) {
-            System.out.println("Reflection error updating ID: " + e.getMessage());
-        }
+        payment.setId(String.valueOf(generatedId));
     }
 
     /**

@@ -18,13 +18,7 @@ public class MemberRepository implements Repository<Member, String> {
     }
 
     private void setGeneratedId(Member member, int generatedId) {
-        try {
-            java.lang.reflect.Field idField = Member.class.getDeclaredField("id");
-            idField.setAccessible(true);
-            idField.set(member, String.valueOf(generatedId));
-        } catch (Exception e) {
-            System.out.println("Reflection error updating ID: " + e.getMessage());
-        }
+        member.setId(String.valueOf(generatedId));
     }
 
     /**

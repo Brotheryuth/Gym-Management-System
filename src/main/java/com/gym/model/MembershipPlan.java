@@ -3,7 +3,7 @@ package com.gym.model;
 import java.util.UUID;
 
 public class MembershipPlan {
-    private final String planID;
+    private String planID;
     private String planName;
     private double planPrice;
     private int duration;
@@ -34,6 +34,10 @@ public class MembershipPlan {
 
     public String getPlanID() {
         return planID;
+    }
+
+    public void setPlanID(String planID) {
+        this.planID = planID;
     }
 
     public String getPlanName() {
