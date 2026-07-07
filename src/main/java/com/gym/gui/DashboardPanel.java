@@ -143,7 +143,7 @@ public class DashboardPanel extends JPanel {
 
         // --- BOTTOM WIZARD BAR ---
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton btnQuickEnroll = UIHelper.createOutlineButton("Enrollment Wizard", new Color(155, 89, 182));
+        JButton btnQuickEnroll = UIHelper.createOutlineButton("Enrollment ", new Color(155, 89, 182));
         btnQuickEnroll.setPreferredSize(new Dimension(200, 42));
         
         btnQuickEnroll.addActionListener(e -> {
