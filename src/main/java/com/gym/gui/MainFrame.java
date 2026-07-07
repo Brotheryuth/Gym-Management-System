@@ -1,5 +1,6 @@
 package com.gym.gui;
 
+import com.gym.model.Staff;
 import com.gym.service.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -10,6 +11,16 @@ public class MainFrame extends JFrame {
 
     private final CardLayout cardLayout;
     private final JPanel contentPanel;
+    
+    private final MemberService memberService;
+    private final MembershipService membershipService;
+    private final MembershipPlanService membershipPlanService;
+    private final PaymentService paymentService;
+    private final StaffService staffService;
+    private final Staff loggedInStaff;
+
+    private JLabel lblActiveMembersHeader;
+    private JLabel lblRevenueHeader;
     
     // Tracking lists for sidebar navigation styling
     private final List<JButton> navButtons = new ArrayList<>();
@@ -28,8 +39,16 @@ public class MainFrame extends JFrame {
         MembershipService membershipService,
         MembershipPlanService membershipPlanService,
         PaymentService paymentService,
-        StaffService staffService
+        StaffService staffService,
+        Staff loggedInStaff
     ) {
+        this.memberService = memberService;
+        this.membershipService = membershipService;
+        this.membershipPlanService = membershipPlanService;
+        this.paymentService = paymentService;
+        this.staffService = staffService;
+        this.loggedInStaff = loggedInStaff;
+
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
@@ -77,6 +96,60 @@ public class MainFrame extends JFrame {
         sideBar.add(Box.createVerticalStrut(10));
         sideBar.add(btnPlan);
 
+        // Profile display and Logout at bottom
+        sideBar.add(Box.createVerticalGlue());
+
+        // Styled Profile Card
+        JPanel profilePanel = new JPanel();
+        profilePanel.setLayout(new BoxLayout(profilePanel, BoxLayout.Y_AXIS));
+        profilePanel.setOpaque(true);
+        profilePanel.setBackground(hoverBg);
+        profilePanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        profilePanel.setMaximumSize(new Dimension(200, 60));
+        profilePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel lblUser = new JLabel(loggedInStaff.getName());
+        lblUser.setForeground(Color.WHITE);
+        lblUser.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblUser.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel lblRole = new JLabel(loggedInStaff.getRole() != null ? loggedInStaff.getRole().name() : "STAFF");
+        lblRole.setForeground(textInactive);
+        lblRole.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblRole.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        profilePanel.add(lblUser);
+        profilePanel.add(Box.createVerticalStrut(3));
+        profilePanel.add(lblRole);
+
+        sideBar.add(profilePanel);
+        sideBar.add(Box.createVerticalStrut(15));
+
+        // Logout Button
+        JButton btnLogout = UIHelper.createOutlineButton("Logout", new Color(239, 68, 68));
+        btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnLogout.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnLogout.setMaximumSize(new Dimension(200, 36));
+        btnLogout.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to log out?",
+                "Confirm Logout",
+                JOptionPane.YES_NO_OPTION
+            );
+            if (confirm == JOptionPane.YES_OPTION) {
+                this.dispose();
+                new LoginFrame(
+                    this.memberService,
+                    this.membershipService,
+                    this.membershipPlanService,
+                    this.paymentService,
+                    this.staffService
+                ).setVisible(true);
+            }
+        });
+        sideBar.add(btnLogout);
+
         add(sideBar, BorderLayout.WEST);
 
         // --- CONTENT PANEL (CardLayout) ---
@@ -104,7 +177,7 @@ public class MainFrame extends JFrame {
         MembershipPlanPanel planPanel = new MembershipPlanPanel(
             membershipPlanService
         );
-        PaymentPanel paymentPanel = new PaymentPanel(membershipService);
+        PaymentPanel paymentPanel = new PaymentPanel(paymentService);
 
         contentPanel.add(dashboardPanel, "Dashboard");
         contentPanel.add(memberPanel, "Members");

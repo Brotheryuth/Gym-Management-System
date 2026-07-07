@@ -88,20 +88,17 @@ public class Server {
             app.start(7070);
 
             javax.swing.SwingUtilities.invokeLater(() -> {
-                com.gym.gui.MainFrame mainFrame = new com.gym.gui.MainFrame(
+                com.gym.gui.LoginFrame loginFrame = new com.gym.gui.LoginFrame(
                     memberService,
                     membershipService,
                     planService,
                     paymentService,
                     staffService
                 );
-                mainFrame.setVisible(true);
+                loginFrame.setVisible(true);
             });
         } catch (Exception e) {
             e.printStackTrace();
-        }finally{
-           // close connection 
         }
-
     }
 }

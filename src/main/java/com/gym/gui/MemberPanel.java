@@ -18,6 +18,9 @@ public class MemberPanel extends JPanel {
     private final DefaultTableModel tableModel;
     private final JTextField txtSearch;
 
+    private final JLabel lblTotalMembers;
+    private final JLabel lblActiveMembers;
+
     public MemberPanel(
         MemberService memberService, 
         PaymentService paymentService,
@@ -31,6 +34,19 @@ public class MemberPanel extends JPanel {
 
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        // --- TOP STATS PANEL ---
+        JPanel statsPanel = new JPanel(new GridLayout(1, 2, 20, 0));
+        statsPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+
+        JPanel cardTotal = UIHelper.createMetricCard("Total Members", "0", new Color(52, 152, 219)); // Blue
+        lblTotalMembers = (JLabel) cardTotal.getClientProperty("valLabel");
+
+        JPanel cardActive = UIHelper.createMetricCard("Active Members", "0", new Color(46, 204, 113)); // Green
+        lblActiveMembers = (JLabel) cardActive.getClientProperty("valLabel");
+
+        statsPanel.add(cardTotal);
+        statsPanel.add(cardActive);
 
         // Header Panel (Search & Register)
         JPanel headerPanel = new JPanel(new BorderLayout(10, 10));
@@ -62,7 +78,12 @@ public class MemberPanel extends JPanel {
 
         headerPanel.add(searchSubPanel, BorderLayout.WEST);
         headerPanel.add(btnAdd, BorderLayout.EAST);
-        add(headerPanel, BorderLayout.NORTH);
+
+        // Compound top panel
+        JPanel northPanel = new JPanel(new BorderLayout());
+        northPanel.add(statsPanel, BorderLayout.NORTH);
+        northPanel.add(headerPanel, BorderLayout.SOUTH);
+        add(northPanel, BorderLayout.NORTH);
 
         // Center Member Table (Read-only)
         String[] columns = {"ID", "Full Name", "Gender", "Phone Number", "DOB", "Age", "Status"};
@@ -93,7 +114,15 @@ public class MemberPanel extends JPanel {
 
     public void refreshStat() {
         tableModel.setRowCount(0);
-        for (Member m : memberService.findAll()) {
+        List<Member> list = memberService.findAll();
+        
+        long total = list.size();
+        long active = list.stream().filter(m -> m.getMemberStatus() == MemberStatus.ACTIVE).count();
+        
+        lblTotalMembers.setText(String.valueOf(total));
+        lblActiveMembers.setText(String.valueOf(active));
+
+        for (Member m : list) {
             tableModel.addRow(new Object[]{
                 m.getId(), m.getFullName(), m.getGender(), m.getPhoneNumber(), m.getDob(), m.getAge(), m.getMemberStatus()
             });

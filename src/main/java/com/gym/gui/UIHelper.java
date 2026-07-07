@@ -87,4 +87,27 @@ public class UIHelper {
             }
         };
     }
+
+    /**
+     * Creates a modern premium statistics metric card panel.
+     */
+    public static JPanel createMetricCard(String title, String val, Color bg) {
+        JPanel card = new JPanel(new java.awt.GridLayout(2, 1));
+        card.setBackground(bg);
+        card.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblTitle.setForeground(Color.WHITE);
+
+        JLabel lblVal = new JLabel(val);
+        lblVal.setFont(new Font("Segoe UI", Font.BOLD, 30));
+        lblVal.setForeground(Color.WHITE);
+
+        card.add(lblTitle);
+        card.add(lblVal);
+        
+        card.putClientProperty("valLabel", lblVal);
+        return card;
+    }
 }
