@@ -18,6 +18,11 @@ public class DashboardPanel extends JPanel {
     private final JLabel lblActiveMembers;
     private final JLabel lblTotalRevenue;
     
+    // Popular Plan Progress Bars
+    private final JProgressBar barStandard;
+    private final JProgressBar barPremium;
+    private final JProgressBar barElite;
+    
     // Left Table: Recent Members
     private final JTable tblRecentMembers;
     private final DefaultTableModel recentModel;
@@ -40,20 +45,78 @@ public class DashboardPanel extends JPanel {
         setLayout(new BorderLayout(20, 15));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // --- TOP STATS PANEL ---
-        JPanel statsPanel = new JPanel(new GridLayout(1, 2, 20, 20));
+        // --- TOP STATS PANEL (3 Columns) ---
+        JPanel statsPanel = new JPanel(new GridLayout(1, 3, 20, 20));
         
-        JPanel pnlActive = createMetricCard("Active Members", "0", new Color(46, 204, 113));
+        JPanel pnlActive = createMetricCard("Active Members", "0", new Color(46, 204, 113)); // Green
         lblActiveMembers = (JLabel) pnlActive.getClientProperty("valLabel");
 
-        JPanel pnlRevenue = createMetricCard("Total Revenue", "$0.00", new Color(52, 152, 219));
+        JPanel pnlRevenue = createMetricCard("Total Revenue", "$0.00", new Color(52, 152, 219)); // Blue
         lblTotalRevenue = (JLabel) pnlRevenue.getClientProperty("valLabel");
+
+        // Popularity card with 3 progress bars
+        JPanel pnlPopularity = new JPanel(new BorderLayout(5, 5));
+        pnlPopularity.setBackground(Color.WHITE);
+        pnlPopularity.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
+            BorderFactory.createEmptyBorder(10, 15, 10, 15)
+        ));
+
+        JLabel lblPopTitle = new JLabel("Plan Distribution");
+        lblPopTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblPopTitle.setForeground(new Color(120, 125, 135));
+        pnlPopularity.add(lblPopTitle, BorderLayout.NORTH);
+
+        JPanel barsPanel = new JPanel(new GridLayout(3, 1, 5, 5));
+        barsPanel.setOpaque(false);
+
+        // Standard Plan Bar
+        JPanel rowStandard = new JPanel(new BorderLayout(5, 2));
+        rowStandard.setOpaque(false);
+        JLabel lblStd = new JLabel("Standard:");
+        lblStd.setPreferredSize(new Dimension(65, 0));
+        lblStd.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        rowStandard.add(lblStd, BorderLayout.WEST);
+        barStandard = new JProgressBar(0, 100);
+        barStandard.setStringPainted(true);
+        barStandard.setForeground(new Color(52, 152, 219)); // Blue
+        rowStandard.add(barStandard, BorderLayout.CENTER);
+
+        // Premium Plan Bar
+        JPanel rowPremium = new JPanel(new BorderLayout(5, 2));
+        rowPremium.setOpaque(false);
+        JLabel lblPrem = new JLabel("Premium:");
+        lblPrem.setPreferredSize(new Dimension(65, 0));
+        lblPrem.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        rowPremium.add(lblPrem, BorderLayout.WEST);
+        barPremium = new JProgressBar(0, 100);
+        barPremium.setStringPainted(true);
+        barPremium.setForeground(new Color(155, 89, 182)); // Purple
+        rowPremium.add(barPremium, BorderLayout.CENTER);
+
+        // Elite Plan Bar
+        JPanel rowElite = new JPanel(new BorderLayout(5, 2));
+        rowElite.setOpaque(false);
+        JLabel lblElite = new JLabel("Elite:");
+        lblElite.setPreferredSize(new Dimension(65, 0));
+        lblElite.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        rowElite.add(lblElite, BorderLayout.WEST);
+        barElite = new JProgressBar(0, 100);
+        barElite.setStringPainted(true);
+        barElite.setForeground(new Color(230, 126, 34)); // Orange
+        rowElite.add(barElite, BorderLayout.CENTER);
+
+        barsPanel.add(rowStandard);
+        barsPanel.add(rowPremium);
+        barsPanel.add(rowElite);
+        pnlPopularity.add(barsPanel, BorderLayout.CENTER);
 
         statsPanel.add(pnlActive);
         statsPanel.add(pnlRevenue);
+        statsPanel.add(pnlPopularity);
         add(statsPanel, BorderLayout.NORTH);
 
-        // --- CENTER SPLIT-TABLE PANEL (Recent + Expiring/Expired) ---
+        // --- CENTER SPLIT-TABLE PANEL ---
         JPanel tablesContainer = new JPanel(new GridLayout(1, 2, 20, 0));
 
         // 1. Left Table: Recent Registrations
@@ -162,7 +225,6 @@ public class DashboardPanel extends JPanel {
      * Refreshes stats, lists, and checks for expirations.
      */
     public void refreshStat() {
-        // Run database check to set expired flags
         membershipService.checkAndExpireMemberships();
 
         // 1. Calculate Active Members
@@ -179,7 +241,41 @@ public class DashboardPanel extends JPanel {
         lblActiveMembers.setText(String.valueOf(activeCount));
         lblTotalRevenue.setText(String.format("$%.2f", totalRevenue));
 
-        // 3. Load Left Table (Last 5 Registrations)
+        // 3. Calculate Popular Plan Percentages
+        List<Membership> allMemberships = membershipService.findAll();
+        long totalSubs = allMemberships.size();
+        
+        long countStandard = 0;
+        long countPremium = 0;
+        long countElite = 0;
+
+        for (Membership ms : allMemberships) {
+            if (ms.getPlan() != null) {
+                String planName = ms.getPlan().getPlanName();
+                if (planName.toLowerCase().contains("standard")) {
+                    countStandard++;
+                } else if (planName.toLowerCase().contains("premium")) {
+                    countPremium++;
+                } else if (planName.toLowerCase().contains("elite")) {
+                    countElite++;
+                }
+            }
+        }
+
+        int pctStandard = totalSubs > 0 ? (int) ((countStandard * 100) / totalSubs) : 0;
+        int pctPremium = totalSubs > 0 ? (int) ((countPremium * 100) / totalSubs) : 0;
+        int pctElite = totalSubs > 0 ? (int) ((countElite * 100) / totalSubs) : 0;
+
+        barStandard.setValue(pctStandard);
+        barStandard.setString(pctStandard + "%");
+
+        barPremium.setValue(pctPremium);
+        barPremium.setString(pctPremium + "%");
+
+        barElite.setValue(pctElite);
+        barElite.setString(pctElite + "%");
+
+        // 4. Load Left Table (Last 5 Registrations)
         recentModel.setRowCount(0);
         List<Member> allMembers = memberService.findAll();
         int limit = Math.max(0, allMembers.size() - 5);
@@ -190,12 +286,12 @@ public class DashboardPanel extends JPanel {
             });
         }
 
-        // 4. Load Right Table (Expired & Expiring Subscriptions)
+        // 5. Load Right Table (Expired & Expiring Subscriptions)
         expiringModel.setRowCount(0);
         long sevenDaysInMillis = 7L * 24 * 60 * 60 * 1000;
         long todayMs = System.currentTimeMillis();
 
-        for (Membership ms : membershipService.findAll()) {
+        for (Membership ms : allMemberships) {
             boolean isExpired = ms.getStatus() == MembershipStatus.EXPIRED;
             boolean isExpiringSoon = false;
 
