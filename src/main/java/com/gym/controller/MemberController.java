@@ -58,6 +58,7 @@ public class MemberController {
         }catch (IllegalArgumentException e ){
             ctx.status(HttpStatus.BAD_REQUEST).result(e.getMessage());
         }catch (Exception e ){
+            e.getStackTrace();
             ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result(e.getMessage());
         }
     }

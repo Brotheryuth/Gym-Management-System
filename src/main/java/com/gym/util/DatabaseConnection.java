@@ -23,6 +23,14 @@ public class DatabaseConnection {
             String password = prop.getProperty("db.password");
             Class.forName("com.mysql.cj.jdbc.Driver");
             this.connection = DriverManager.getConnection(url,user,password);
+
+            // Auto-create gym_db and select it so that all SQL tables are grouped cleanly
+            try (java.sql.Statement stmt = this.connection.createStatement()) {
+                stmt.execute("CREATE DATABASE IF NOT EXISTS gym_db;");
+                stmt.execute("USE gym_db;");
+            } catch (SQLException ex) {
+                System.out.println("Note: Could not run USE gym_db, using default catalog: " + ex.getMessage());
+            }
         }
         catch (Exception e ){
             System.out.println(e.getMessage());

@@ -2,7 +2,6 @@ package com.gym.service;
 
 import com.gym.model.Staff;
 import com.gym.enums.StaffShift;
-import com.gym.enums.StaffRole;
 import com.gym.repository.StaffRepository;
 
 import java.util.List;
