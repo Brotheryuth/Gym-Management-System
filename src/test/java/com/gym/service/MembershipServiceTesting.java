@@ -92,7 +92,7 @@ public class MembershipServiceTesting {
     @Test
     public void testCancelMembership_ShouldSucceed_AndDeactivateMember() {
         // Arrange
-        when(membershipRepository.findByID("MS-100")).thenReturn(activeMembership);
+        when(membershipRepository.findById("MS-100")).thenReturn(activeMembership);
         when(membershipRepository.update(activeMembership)).thenReturn(true);
 
         // Act

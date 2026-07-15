@@ -51,7 +51,7 @@ public class MemberServiceTesting {
         Member member = new Member("1", "Alice Smith", Gender.FEMALE, "123456789", dob, MemberStatus.INACTIVE);
         Member existingMember = new Member("1", "John Doe", Gender.MALE, "987654321", dob, MemberStatus.ACTIVE);
 
-        when(memberRepository.findByID("1")).thenReturn(existingMember);
+        when(memberRepository.findById("1")).thenReturn(existingMember);
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {

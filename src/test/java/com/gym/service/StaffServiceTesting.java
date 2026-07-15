@@ -122,7 +122,7 @@ public class StaffServiceTesting {
         when(staffRepository.findAll()).thenReturn(Collections.singletonList(staffAlice));
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(IllegalStateException.class, () -> {
             staffService.authenticate("Alice Admin", "wrongpass");
         });
     }
