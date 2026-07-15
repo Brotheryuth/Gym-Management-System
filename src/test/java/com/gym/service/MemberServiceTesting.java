@@ -32,7 +32,7 @@ public class MemberServiceTesting {
         Member member = new Member("1", "Alice Smith", Gender.FEMALE, "123456789", dob, MemberStatus.INACTIVE);
 
         // Tell mock repository to simulate unique status
-        when(memberRepository.findByID("1")).thenReturn(null);
+        when(memberRepository.findById("1")).thenReturn(null);
         when(memberRepository.findByPhoneNumber("123456789")).thenReturn(null);
         when(memberRepository.insert(member)).thenReturn(true);
 
@@ -71,7 +71,7 @@ public class MemberServiceTesting {
         Member existingPhoneMember = new Member("2", "John Doe", Gender.MALE, "123456789", dob, MemberStatus.ACTIVE);
 
         // Simulate unique ID check but duplicate Phone check
-        when(memberRepository.findByID("1")).thenReturn(null);
+        when(memberRepository.findById("1")).thenReturn(null);
         when(memberRepository.findByPhoneNumber("123456789")).thenReturn(existingPhoneMember);
 
         // Act & Assert
