@@ -15,13 +15,7 @@ public class MembershipPlanRepository implements Repository<MembershipPlan, Stri
     }
 
     private void setGeneratedId(MembershipPlan plan, int generatedId) {
-        try {
-            java.lang.reflect.Field idField = MembershipPlan.class.getDeclaredField("planID");
-            idField.setAccessible(true);
-            idField.set(plan, String.valueOf(generatedId));
-        } catch (Exception e) {
-            System.out.println("Reflection error updating ID: " + e.getMessage());
-        }
+        plan.setPlanID(String.valueOf(generatedId));
     }
 
     /**

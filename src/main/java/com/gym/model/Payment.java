@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class Payment {
-    private final String id;
+    private String id;
     @JsonIgnoreProperties("payment")
     private Membership membership;
     private double baseAmount;
@@ -96,6 +96,10 @@ public class Payment {
 
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Membership getMembership() {
