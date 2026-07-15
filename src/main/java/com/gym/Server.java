@@ -87,16 +87,20 @@ public class Server {
 
             app.start(7070);
 
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                com.gym.gui.LoginFrame loginFrame = new com.gym.gui.LoginFrame(
-                    memberService,
-                    membershipService,
-                    planService,
-                    paymentService,
-                    staffService
-                );
-                loginFrame.setVisible(true);
-            });
+            if (!java.awt.GraphicsEnvironment.isHeadless()) {
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    com.gym.gui.LoginFrame loginFrame = new com.gym.gui.LoginFrame(
+                        memberService,
+                        membershipService,
+                        planService,
+                        paymentService,
+                        staffService
+                    );
+                    loginFrame.setVisible(true);
+                });
+            } else {
+                System.out.println("Headless environment detected. Running backend web services only.");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
