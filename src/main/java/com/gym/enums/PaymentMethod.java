@@ -1,5 +1,5 @@
 package com.gym.enums;
 
 public enum PaymentMethod {
-    BYCASH , KHQR , CREDITCARD
+    CASH , KHQR , CREDIT_CARD
 }
