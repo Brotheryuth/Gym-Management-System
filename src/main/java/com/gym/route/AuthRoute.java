@@ -12,5 +12,6 @@ public class AuthRoute implements   EndpointGroup {
     @Override
     public void addEndpoints() {
         post("login", authController::login);
+        get("login", authController::login);
     }
 }

@@ -47,15 +47,32 @@ public class AuthController {
     }
     public void login(Context ctx){
         try{
+            String identifier = null;
+            String password = null;
 
-            LoginRequest getStaff =ctx.bodyAsClass(LoginRequest.class);
-            if(getStaff.identifier ==null || getStaff.identifier.isBlank() ){
+            if ("POST".equalsIgnoreCase(ctx.method().name())) {
+                LoginRequest getStaff = ctx.bodyAsClass(LoginRequest.class);
+                identifier = getStaff != null ? getStaff.identifier : null;
+                password = getStaff != null ? getStaff.password : null;
+            } else {
+                identifier = ctx.queryParam("identifier");
+                password = ctx.queryParam("password");
+                if (identifier == null && ctx.body().length() > 0) {
+                    try {
+                        LoginRequest getStaff = ctx.bodyAsClass(LoginRequest.class);
+                        identifier = getStaff != null ? getStaff.identifier : null;
+                        password = getStaff != null ? getStaff.password : null;
+                    } catch (Exception ignored) {}
+                }
+            }
+
+            if(identifier == null || identifier.isBlank()){
                 throw new IllegalArgumentException("Name or Phone number cannot be empty");
             }
-            if(getStaff.password ==null || getStaff.password.isBlank()){
+            if(password == null || password.isBlank()){
                 throw new IllegalArgumentException("Password cannot be empty");
             }
-            Staff staff =staffService.authenticate(getStaff.identifier ,getStaff.password);
+            Staff staff = staffService.authenticate(identifier, password);
             LoginResponse res = new LoginResponse(staff);
             ctx.status(HttpStatus.OK).json(res);
         }catch (IllegalArgumentException e ){
