@@ -93,7 +93,14 @@ public class MembershipController {
 
             PaymentMethod method = PaymentMethod.BYCASH;
             if (req.paymentMethod != null && !req.paymentMethod.isBlank()) {
-                method = PaymentMethod.valueOf(req.paymentMethod.toUpperCase());
+                String upper = req.paymentMethod.trim().toUpperCase();
+                if (upper.equals("CASH")) upper = "BYCASH";
+                if (upper.equals("CREDIT_CARD") || upper.equals("CARD")) upper = "CREDITCARD";
+                try {
+                    method = PaymentMethod.valueOf(upper);
+                } catch (IllegalArgumentException e) {
+                    method = PaymentMethod.BYCASH;
+                }
             }
 
             Membership newMembership = membershipService.subscribeMember(

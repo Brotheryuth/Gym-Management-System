@@ -21,7 +21,7 @@
 | | baseAmount | DECIMAL(10,2) | NOT NULL, CHECK (baseAmount >= 0) |
 | | finalAmount | DECIMAL(10,2) | NOT NULL, CHECK (finalAmount >= 0) |
 | | discount | DECIMAL(3,2) | DEFAULT 0.00, CHECK (discount >= 0.0 AND discount <= 1.0) |
-| | method | VARCHAR(20) | DEFAULT 'BYCASH', CHECK (BYCASH, KHQR, CREDITCARD) |
+| | method | VARCHAR(20) | DEFAULT 'CASH', CHECK (CASH, KHQR, CREDIT_CARD) |
 | | status | VARCHAR(20) | DEFAULT 'PENDING', CHECK (PAID, PENDING, FAILED) |
 | | createAt | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
 | | paymentDate | TIMESTAMP | NULL |

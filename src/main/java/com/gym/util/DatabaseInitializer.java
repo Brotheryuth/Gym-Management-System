@@ -88,7 +88,7 @@ public class DatabaseInitializer {
                     baseAmount DECIMAL(10, 2) NOT NULL,
                     finalAmount DECIMAL(10, 2) NOT NULL,
                     discount DECIMAL(3, 2) DEFAULT 0.00 NULL,
-                    method VARCHAR(20) DEFAULT 'BYCASH' NULL,
+                    method VARCHAR(20) DEFAULT 'CASH' NULL,
                     status VARCHAR(20) DEFAULT 'PENDING' NULL,
                     createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL,
                     paymentDate TIMESTAMP NULL,
@@ -98,7 +98,7 @@ public class DatabaseInitializer {
                     CHECK (baseAmount >= 0),
                     CHECK (finalAmount >= 0),
                     CHECK (discount >= 0.0 AND discount <= 1.0),
-                    CHECK (method IN ('BYCASH', 'KHQR', 'CREDITCARD')),
+                    CHECK (method IN ('CASH', 'KHQR', 'CREDIT_CARD')),
                     CHECK (status IN ('PAID', 'PENDING', 'FAILED'))
                 );
                 """;

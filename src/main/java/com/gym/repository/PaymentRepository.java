@@ -29,13 +29,19 @@ public class PaymentRepository implements Repository<Payment, String> {
      */
     private Payment mapRowToPayment(ResultSet rs) throws SQLException {
         // 1. Reconstruct Member
+        String genderStr = rs.getString("gender");
+        Gender gender = (genderStr != null && !genderStr.isBlank()) ? Gender.valueOf(genderStr.toUpperCase()) : Gender.OTHER;
+
+        String mStatusStr = rs.getString("m_status");
+        MemberStatus mStatus = (mStatusStr != null && !mStatusStr.isBlank()) ? MemberStatus.valueOf(mStatusStr.toUpperCase()) : MemberStatus.ACTIVE;
+
         Member member = new Member(
                 String.valueOf(rs.getInt("m_id")),
                 rs.getString("fullName"),
-                Gender.valueOf(rs.getString("gender").toUpperCase()),
+                gender,
                 rs.getString("phoneNumber"),
                 rs.getDate("dob"),
-                MemberStatus.valueOf(rs.getString("m_status").toUpperCase())
+                mStatus
         );
 
         // 2. Reconstruct MembershipPlan
@@ -47,28 +53,67 @@ public class PaymentRepository implements Repository<Payment, String> {
         );
 
         // 3. Reconstruct Membership
+        String msStatusStr = rs.getString("ms_status");
+        MembershipStatus msStatus = (msStatusStr != null && !msStatusStr.isBlank()) ? MembershipStatus.valueOf(msStatusStr.toUpperCase()) : MembershipStatus.PENDING;
+
         Membership membership = new Membership(
                 String.valueOf(rs.getInt("ms_id")),
                 member,
                 plan,
                 rs.getDate("startDate"),
                 rs.getDate("endDate"),
-                MembershipStatus.valueOf(rs.getString("ms_status").toUpperCase())
+                msStatus
         );
 
         // 4. Reconstruct Payment using getObject for LocalDateTime mapping
         double dbDiscount = rs.getDouble("discount");
         int discountPercentage = (int) Math.round(dbDiscount * 100.0);
 
+        String methodStr = rs.getString("method");
+        PaymentMethod method = PaymentMethod.BYCASH;
+        if (methodStr != null && !methodStr.isBlank()) {
+            String upper = methodStr.trim().toUpperCase();
+            if (upper.equals("CASH")) upper = "BYCASH";
+            if (upper.equals("CREDIT_CARD") || upper.equals("CARD")) upper = "CREDITCARD";
+            try {
+                method = PaymentMethod.valueOf(upper);
+            } catch (IllegalArgumentException e) {
+                method = PaymentMethod.BYCASH;
+            }
+        }
+
+        String pStatusStr = rs.getString("p_status");
+        PaymentStatus pStatus = (pStatusStr != null && !pStatusStr.isBlank()) ? PaymentStatus.valueOf(pStatusStr.toUpperCase()) : PaymentStatus.PENDING;
+
+        LocalDateTime createAt = null;
+        try {
+            Object catObj = rs.getObject("createAt");
+            if (catObj instanceof LocalDateTime ldt) {
+                createAt = ldt;
+            } else if (catObj != null) {
+                createAt = rs.getTimestamp("createAt") != null ? rs.getTimestamp("createAt").toLocalDateTime() : null;
+            }
+        } catch (Exception ignored) {}
+
+        LocalDateTime paymentDate = null;
+        try {
+            Object pdtObj = rs.getObject("paymentDate");
+            if (pdtObj instanceof LocalDateTime ldt) {
+                paymentDate = ldt;
+            } else if (pdtObj != null) {
+                paymentDate = rs.getTimestamp("paymentDate") != null ? rs.getTimestamp("paymentDate").toLocalDateTime() : null;
+            }
+        } catch (Exception ignored) {}
+
         return new Payment(
                 String.valueOf(rs.getInt("p_id")),
                 membership,
                 rs.getDouble("baseAmount"),
                 discountPercentage,
-                PaymentMethod.valueOf(rs.getString("method").toUpperCase()),
-                PaymentStatus.valueOf(rs.getString("p_status").toUpperCase()),
-                rs.getObject("createAt", LocalDateTime.class),
-                rs.getObject("paymentDate", LocalDateTime.class)
+                method,
+                pStatus,
+                createAt,
+                paymentDate
         );
     }
 
