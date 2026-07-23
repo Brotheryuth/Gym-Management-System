@@ -5,6 +5,7 @@ import com.gym.model.Staff;
 import com.gym.enums.Gender;
 import com.gym.enums.StaffRole;
 import com.gym.enums.StaffShift;
+import com.gym.util.DatabaseConnection;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

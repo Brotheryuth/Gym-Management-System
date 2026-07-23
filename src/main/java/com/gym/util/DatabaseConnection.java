@@ -38,6 +38,10 @@ public class DatabaseConnection {
                 return;
             }
 
+            url = url.trim();
+            if (user != null) user = user.trim();
+            if (password != null) password = password.trim();
+
             Class.forName("com.mysql.cj.jdbc.Driver");
             this.connection = DriverManager.getConnection(url, user, password);
 
