@@ -26,6 +26,7 @@ A Java-powered backend REST service and desktop application for managing gym mem
 - [Getting Started](#getting-started)
   - [1. Database Configuration](#1-database-configuration)
   - [2. Build & Run Application](#2-build--run-application)
+- [Troubleshooting & Common Issues](#troubleshooting--common-issues)
 - [Project Architecture](#project-architecture)
 
 ---
@@ -125,14 +126,19 @@ erDiagram
    CREATE DATABASE gym_db;
    ```
 
-2. **Configure Credentials**:
-   Update `src/main/resources/db.properties` with your database credentials:
+2. **Locate and update the properties file**:
+   Open `src/main/resources/db.properties` in your project folder and update it with your local MySQL credentials:
    ```properties
    db.url = jdbc:mysql://localhost:3306/gym_db
    db.user = YOUR_MYSQL_USERNAME
    db.password = YOUR_MYSQL_PASSWORD
    ```
-   *(Tables will be created automatically by `DatabaseInitializer` on startup.)*
+   - **File Location**: `src/main/resources/db.properties`
+   - **db.url**: MySQL connection URL (default port is `3306` and database name is `gym_db`).
+   - **db.user**: Your MySQL database username (e.g. `root`).
+   - **db.password**: Your MySQL account password.
+
+   *(Note: Table schema and default records are automatically generated on application startup by `DatabaseInitializer`.)*
 
 ---
 
@@ -146,7 +152,7 @@ erDiagram
    cd Gym-Management-System
    ```
 
-2. **Compile project and download dependencies**:
+2. **Clean compile and download dependencies**:
    ```bash
    mvn clean compile
    ```
@@ -167,6 +173,29 @@ erDiagram
    ```bash
    docker run -p 7070:7070 gym-management
    ```
+
+---
+
+## Troubleshooting & Common Issues
+
+### 1. Compilation or Runtime Errors
+If you run into build issues, stale class files, or runtime errors after pulling or modifying code, clear the target build folder and recompile:
+
+```bash
+mvn clean compile
+```
+
+Once the clean build succeeds, start the server again:
+
+```bash
+mvn exec:java
+```
+
+### 2. Database Connection Failure
+If the application fails to connect to MySQL on startup:
+- Verify that your MySQL server service is actively running on port `3306`.
+- Double-check that `gym_db` has been created (`CREATE DATABASE gym_db;`).
+- Ensure the username and password in `src/main/resources/db.properties` match your MySQL setup.
 
 ---
 
