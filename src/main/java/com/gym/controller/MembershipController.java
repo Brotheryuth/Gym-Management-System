@@ -125,4 +125,26 @@ public class MembershipController {
             ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Internal error: " + e.getMessage());
         }
     }
+
+    public void cancelMembership(Context ctx) {
+        String id = ctx.pathParam("id");
+        try {
+            boolean result = membershipService.cancelMembership(id);
+            if (!result) {
+                ctx.status(HttpStatus.BAD_REQUEST).result("Failed to cancel membership.");
+                return;
+            }
+            ctx.status(HttpStatus.OK).json(java.util.Map.of("message", "Membership cancelled successfully", "membershipID", id));
+        } catch (IllegalArgumentException e) {
+            ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
+        } catch (IllegalStateException e) {
+            ctx.status(HttpStatus.CONFLICT).result(e.getMessage());
+        } catch (Exception e) {
+            ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Internal error: " + e.getMessage());
+        }
+    }
+
+    public void deleteMembership(Context ctx) {
+        cancelMembership(ctx);
+    }
 }

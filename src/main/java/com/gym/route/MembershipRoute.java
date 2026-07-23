@@ -16,9 +16,11 @@ public class MembershipRoute implements EndpointGroup {
     @Override
     public void addEndpoints() {
         get(membershipController::findAll);
+        post(membershipController::subscribeMember);
         path("{id}", () -> {
             get(membershipController::findById);
+            delete(membershipController::deleteMembership);
+            post("cancel", membershipController::cancelMembership);
         });
-        post(membershipController::subscribeMember);
     }
 }
