@@ -22,6 +22,16 @@ public class StaffRepository implements Repository<Staff, String> {
         this.connection = connection;
     }
 
+    private Connection getConnection() {
+        try {
+            Connection active = DatabaseConnection.getInstance().getConnection();
+            if (active != null && !active.isClosed()) {
+                return active;
+            }
+        } catch (Exception ignored) {}
+        return this.connection;
+    }
+
     private void setGeneratedId(Staff staff, int generatedId) {
         staff.setId(String.valueOf(generatedId));
     }
@@ -41,7 +51,7 @@ public class StaffRepository implements Repository<Staff, String> {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement stmt = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, staff.getName());
             stmt.setString(2, staff.getGender() != null ? staff.getGender().name() : null);
             stmt.setDate(3, staff.getDob());
@@ -87,7 +97,7 @@ public class StaffRepository implements Repository<Staff, String> {
             WHERE id = ?
         """;
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             stmt.setString(1, staff.getName());
             stmt.setString(2, staff.getGender() != null ? staff.getGender().name() : null);
             stmt.setDate(3, staff.getDob());
@@ -120,7 +130,7 @@ public class StaffRepository implements Repository<Staff, String> {
         if (id == null || id.isBlank()) return null;
         String sql = "SELECT * FROM staff WHERE id = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             try {
                 stmt.setInt(1, Integer.parseInt(id.trim()));
             } catch (NumberFormatException e) {
@@ -164,7 +174,7 @@ public class StaffRepository implements Repository<Staff, String> {
         List<Staff> staffList = new ArrayList<>();
         String sql = "SELECT * FROM staff";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql);
+        try (PreparedStatement stmt = getConnection().prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {

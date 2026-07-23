@@ -85,7 +85,14 @@ public class Server {
                 authController
             );
 
-            app.start(7070);
+            int port = 7070;
+            String envPort = System.getenv("PORT");
+            if (envPort != null && !envPort.isBlank()) {
+                try {
+                    port = Integer.parseInt(envPort);
+                } catch (NumberFormatException ignored) {}
+            }
+            app.start(port);
 
             if (!java.awt.GraphicsEnvironment.isHeadless()) {
                 javax.swing.SwingUtilities.invokeLater(() -> {
